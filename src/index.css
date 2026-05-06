@@ -2,48 +2,99 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply bg-background text-[#1a1a18] antialiased;
-  }
+@font-face {
+  font-family: 'Anton';
+  src: url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
 }
 
-@layer components {
-  .nav-item {
-    @apply flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer text-white/50 text-[13px] font-semibold transition-all hover:bg-white/5 hover:text-white/80;
-  }
-  
-  .nav-item.active {
-    @apply bg-cyan text-white shadow-lg shadow-cyan/20;
-  }
-
-  .badge {
-    @apply text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap;
-  }
-
-  .btn-primary {
-    @apply bg-cyan text-white px-4 py-2 rounded-lg font-bold text-[12.5px] flex items-center gap-1.5 transition-all hover:bg-[#187b7a] active:scale-95;
-  }
-
-  .card {
-    @apply bg-white rounded-xl border border-border p-4 transition-all hover:border-cyan hover:shadow-xl hover:shadow-cyan/5 hover:-translate-y-0.5;
-  }
+:root {
+  --dark: #0f0f10;
+  --card: #1a1a1b;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #f0f0f2;
+  --muted: #8e8e93;
+  --cyan: #22d3ee;
+  --yellow: #fbbf24;
+  --turq: #2dd4bf;
+  --red: #f87171;
+  --bg: #09090b;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+body {
+  margin: 0;
+  font-family: 'Nunito', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg);
+  color: var(--text);
+  overflow: hidden;
 }
 
-::-webkit-scrollbar-track {
+h1, h2, h3, .font-display {
+  font-family: 'Anton', sans-serif;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
-
-::-webkit-scrollbar-thumb {
-  @apply bg-border rounded-full;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
-.sidebar-scroll::-webkit-scrollbar-thumb {
-  @apply bg-white/10;
+.custom-scrollbar-mini::-webkit-scrollbar {
+  width: 3px;
+}
+.custom-scrollbar-mini::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar-mini::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  color: #a1a1aa;
+  font-weight: 700;
+  font-size: 13px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #f4f4f5;
+}
+
+.nav-item.active {
+  background: rgba(34, 211, 238, 0.1);
+  color: #22d3ee;
+  border-color: rgba(34, 211, 238, 0.2);
+}
+
+.glass {
+  background: rgba(26, 26, 27, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }

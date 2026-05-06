@@ -23,9 +23,9 @@ const CLUSTERS = [
 ];
 
 export default function App() {
-  const { items, addItem, deleteItem, initialized } = useContentStore();
+  const { items, addItem, updateItem, deleteItem, initialized } = useContentStore();
   
-  const [view, setView] = useState<'board' | 'list' | 'calendar'>('calendar');
+  const [view, setView] = useState<'board' | 'list' | 'calendar'>('board');
   const [calView, setCalView] = useState<'month' | 'week'>('month');
   const [filter, setFilter] = useState({ col: "", cluster: "", tab: "all", search: "" });
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -42,7 +42,7 @@ export default function App() {
       if (filter.tab === "draft" && d.status !== "Draft") return false;
       if (filter.search) {
         const q = filter.search.toLowerCase();
-        if (!d.title.toLowerCase().includes(q) && !d.cname.toLowerCase().includes(q)) return false;
+        if (!d.title.toLowerCase().includes(q) && !d.cname.toLowerCase().includes(q) && !d.cluster.toLowerCase().includes(q)) return false;
       }
       return true;
     });
@@ -54,10 +54,10 @@ export default function App() {
     social: items.filter(i => i.col === 'social').length,
   };
 
-  if (!initialized) return null; // Or a loading spinner
+  if (!initialized) return null;
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden font-sans text-dark selection:bg-cyan/20">
+    <div className="flex h-screen bg-[#09090b] overflow-hidden font-sans text-white selection:bg-cyan/30">
       <Sidebar 
         currentFilter={filter} 
         setFilter={setFilter} 
@@ -67,7 +67,7 @@ export default function App() {
         clusters={CLUSTERS}
       />
 
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 bg-[#09090b]">
         <Topbar 
           currentFilter={filter} 
           setFilter={setFilter} 
@@ -76,14 +76,14 @@ export default function App() {
           onNewIdea={() => setIsNewModalOpen(true)}
         />
 
-        <section className="flex-1 overflow-auto p-8 relative">
+        <section className="flex-1 overflow-auto p-12 relative custom-scrollbar">
           <AnimatePresence mode="wait">
             <motion.div
               key={view}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               className="h-full"
             >
               {view === 'board' && <BoardView items={filteredData} onCardClick={setSelectedId} />}
@@ -110,6 +110,7 @@ export default function App() {
         items={items} 
         onClose={() => setSelectedId(null)} 
         onDelete={deleteItem}
+        onUpdate={updateItem}
       />
 
       <NewIdeaModal 
