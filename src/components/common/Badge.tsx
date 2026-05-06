@@ -14,18 +14,18 @@ interface BadgeProps {
 
 export const Badge: React.FC<BadgeProps> = ({ children, variant = "default", className }) => {
   const styles: Record<string, string> = {
-    "Deep Reel": "bg-cyan/10 text-cyan border border-cyan/20",
-    "Carousel": "bg-yellow/10 text-yellow border border-yellow/20",
-    "Wide Short": "bg-red/10 text-red border border-red/20",
-    "Long Form": "bg-turq/10 text-turq border border-turq/20",
-    "Script Ready": "bg-cyan/10 text-cyan border border-cyan/30",
-    "Draft": "bg-white/5 text-white/50 border border-white/10",
-    "default": "bg-white/5 text-white/40"
+    "Deep Reel": "text-magenta border-b border-magenta",
+    "Carousel": "text-graphite border-b border-mist",
+    "Wide Short": "text-charcoal border-b border-mist",
+    "Long Form": "text-graphite font-bold italic",
+    "Script Ready": "text-magenta uppercase tracking-widest font-bold",
+    "Draft": "text-ash uppercase tracking-widest",
+    "default": "text-ash"
   };
   
   return (
     <span className={cn(
-      "text-[10px] font-black px-2.5 py-1 rounded-lg transition-all whitespace-nowrap uppercase tracking-wider", 
+      "text-[10px] py-0.5 transition-all whitespace-nowrap inline-flex items-center gap-2", 
       styles[variant as keyof typeof styles] || styles.default,
       className
     )}>

@@ -1,49 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { ContentItem } from '../types';
 import { DATA } from '../data/mockData';
-
-const STORAGE_KEY = 'bbmh_content_bank_data';
+import { teable } from '../lib/teable';
 
 export function useContentStore() {
   const [items, setItems] = useState<ContentItem[]>([]);
   const [initialized, setInitialized] = useState(false);
 
-  // Initialize from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setItems(JSON.parse(stored));
-      } catch (e) {
-        console.error('Failed to parse stored data', e);
-        setItems(DATA);
-      }
+  // Sync with Teable-like local storage
+  const sync = useCallback(async () => {
+    const rows = await teable.getRows();
+    if (rows.length === 0 && !localStorage.getItem('bbmh_initialized')) {
+      // First time initialization with mock data
+      const initialRows = await Promise.all(DATA.map((item: ContentItem) => teable.createRow(item)));
+      setItems(initialRows);
+      localStorage.setItem('bbmh_initialized', 'true');
     } else {
-      setItems(DATA);
+      setItems(rows);
     }
     setInitialized(true);
   }, []);
 
-  // Save to localStorage whenever items change
   useEffect(() => {
-    if (initialized) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    }
-  }, [items, initialized]);
+    sync();
+  }, [sync]);
 
-  const addItem = (item: Omit<ContentItem, 'id'>) => {
-    const newItem: ContentItem = {
-      ...item,
-      id: Math.max(0, ...items.map(i => i.id)) + 1,
-    };
-    setItems(prev => [...prev, newItem]);
+  const addItem = async (item: Omit<ContentItem, 'id'>) => {
+    const newRow = await teable.createRow(item);
+    setItems(prev => [...prev, newRow]);
   };
 
-  const updateItem = (id: number, updates: Partial<ContentItem>) => {
-    setItems(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
+  const updateItem = async (id: number, updates: Partial<ContentItem>) => {
+    const updatedRow = await teable.updateRow(id, updates);
+    setItems(prev => prev.map(item => item.id === id ? updatedRow : item));
   };
 
-  const deleteItem = (id: number) => {
+  const deleteItem = async (id: number) => {
+    await teable.deleteRow(id);
     setItems(prev => prev.filter(item => item.id !== id));
   };
 

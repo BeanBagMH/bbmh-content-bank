@@ -1,5 +1,4 @@
 import React from 'react';
-import { Video, FileText, Share2, Calendar as CalIcon, LayoutDashboard } from 'lucide-react';
 import { cn } from '../common/Badge';
 
 interface SidebarProps {
@@ -20,97 +19,96 @@ export const Sidebar: React.FC<SidebarProps> = ({
   clusters
 }) => {
   return (
-    <aside className="w-[260px] bg-[#09090b] flex flex-col shrink-0 border-r border-white/5 h-screen">
-      <div className="p-8">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-cyan rounded-2xl flex items-center justify-center font-black text-dark text-lg shadow-2xl shadow-cyan/40 rotate-3">BB</div>
-          <div>
-            <div className="text-white font-black text-sm tracking-tight leading-none uppercase">BBMh Studio</div>
-            <div className="text-white/30 text-[9px] mt-1.5 uppercase tracking-[0.2em] font-black">Content Bank</div>
-          </div>
+    <aside className="w-[300px] bg-[#fcfaf9] flex flex-col shrink-0 border-r border-[#ececec] h-screen overflow-hidden">
+      <div className="p-12 pb-16">
+        <div className="space-y-1">
+          <h1 className="text-3xl text-graphite tracking-tight leading-none mb-4">BBMh</h1>
+          <div className="h-px w-12 bg-magenta mb-6" />
+          <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-ash">Editorial Sanctuary</p>
         </div>
       </div>
 
-      <nav className="flex-1 px-4 overflow-y-auto custom-scrollbar space-y-1">
-        <div className="px-4 py-3 text-[10px] font-black text-white/20 uppercase tracking-[0.25em] mb-1">Navigation</div>
-        <NavItem 
-          icon={<LayoutDashboard size={16} />} 
-          label="All Views" 
-          active={currentView !== "calendar" && !currentFilter.col} 
-          onClick={() => { setFilter({ ...currentFilter, col: "" }); setView("board") }} 
-        />
-        <NavItem 
-          icon={<Video size={16} />} 
-          label="Video Ideas" 
-          count={itemCounts.video} 
-          active={currentFilter.col === "video"} 
-          onClick={() => { setFilter({ ...currentFilter, col: "video" }); setView("board") }} 
-        />
-        <NavItem 
-          icon={<FileText size={16} />} 
-          label="Blog Posts" 
-          count={itemCounts.blog} 
-          active={currentFilter.col === "blog"} 
-          onClick={() => { setFilter({ ...currentFilter, col: "blog" }); setView("board") }} 
-        />
-        <NavItem 
-          icon={<Share2 size={16} />} 
-          label="Social Content" 
-          count={itemCounts.social} 
-          active={currentFilter.col === "social"} 
-          onClick={() => { setFilter({ ...currentFilter, col: "social" }); setView("board") }} 
-        />
-        <NavItem 
-          icon={<CalIcon size={16} />} 
-          label="Content Calendar" 
-          active={currentView === "calendar"} 
-          onClick={() => { setView("calendar") }} 
-        />
+      <nav className="flex-1 px-8 overflow-y-auto custom-scrollbar space-y-8 pb-20">
+        <div className="space-y-1">
+          <div className="text-[9px] font-bold text-ash uppercase tracking-[0.2em] mb-4 opacity-50">Navigation</div>
+          <NavItem 
+            label="Library Overview" 
+            active={currentView !== "calendar" && !currentFilter.col} 
+            onClick={() => { setFilter({ ...currentFilter, col: "" }); setView("board") }} 
+          />
+          <NavItem 
+            label="Video Essays" 
+            count={itemCounts.video} 
+            active={currentFilter.col === "video"} 
+            onClick={() => { setFilter({ ...currentFilter, col: "video" }); setView("board") }} 
+          />
+          <NavItem 
+            label="Longform Strategy" 
+            count={itemCounts.blog} 
+            active={currentFilter.col === "blog"} 
+            onClick={() => { setFilter({ ...currentFilter, col: "blog" }); setView("board") }} 
+          />
+          <NavItem 
+            label="Social Threads" 
+            count={itemCounts.social} 
+            active={currentFilter.col === "social"} 
+            onClick={() => { setFilter({ ...currentFilter, col: "social" }); setView("board") }} 
+          />
+          <NavItem 
+            label="Planning Calendar" 
+            active={currentView === "calendar"} 
+            onClick={() => { setView("calendar") }} 
+          />
+          <div className="pt-4">
+            <a 
+              href="https://app.appsmith.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="nav-item w-full flex items-center justify-between group px-0 border-none bg-transparent hover:bg-transparent"
+            >
+              <span className="text-magenta font-bold underline underline-offset-4">Appsmith Admin Panel &rsaquo;</span>
+            </a>
+          </div>
+        </div>
 
-        <div className="pt-8 px-4 py-3 text-[10px] font-black text-white/20 uppercase tracking-[0.25em] mb-1">Strategic Clusters</div>
-        <button 
-          onClick={() => setFilter({ ...currentFilter, cluster: "" })}
-          className={cn("nav-item w-full text-left", !currentFilter.cluster && "active")}
-        >Global Strategy</button>
-        {clusters.map(cluster => (
+        <div className="space-y-1">
+          <div className="text-[9px] font-bold text-ash uppercase tracking-[0.2em] mb-4 opacity-50">Strategic Clusters</div>
           <button 
-            key={cluster.id}
-            onClick={() => setFilter({ ...currentFilter, cluster: cluster.id })}
-            className={cn("nav-item w-full text-left group", currentFilter.cluster === cluster.id && "active")}
-          >
-            <span className="opacity-30 mr-3 group-hover:opacity-100 transition-opacity">{cluster.id}</span> {cluster.name}
-          </button>
-        ))}
+            onClick={() => setFilter({ ...currentFilter, cluster: "" })}
+            className={cn("nav-item w-full text-left italic font-display text-lg px-0", !currentFilter.cluster && "active !bg-transparent !text-magenta")}
+          >Global Voice</button>
+          {clusters.map(cluster => (
+            <button 
+              key={cluster.id}
+              onClick={() => setFilter({ ...currentFilter, cluster: cluster.id })}
+              className={cn("nav-item w-full text-left font-display text-lg px-0 italic transition-all hover:pl-2", currentFilter.cluster === cluster.id && "active !bg-transparent !text-magenta")}
+            >
+              <span className="text-[10px] font-sans font-bold not-italic opacity-30 mr-3">{cluster.id}</span> {cluster.name}
+            </button>
+          ))}
+        </div>
       </nav>
 
-      <div className="p-6 mt-auto">
-        <div className="bg-white/5 rounded-2xl p-5 border border-white/5">
-          <div className="text-[10px] font-black text-cyan uppercase tracking-widest mb-2">Usage Limit</div>
-          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mb-3">
-            <div className="h-full bg-cyan w-3/4 shadow-lg shadow-cyan/20" />
-          </div>
-          <button className="w-full py-2.5 rounded-xl bg-cyan text-dark font-black text-[11px] uppercase tracking-wider transition-all hover:bg-cyan/80 active:scale-95 shadow-lg shadow-cyan/10">
-            Upgrade Plan
-          </button>
-        </div>
+      <div className="p-12 border-t border-mist bg-white/50">
+        <div className="text-[10px] font-bold text-ash uppercase tracking-widest mb-4">v1.4.0 Live</div>
+        <p className="text-[11px] leading-relaxed text-charcoal/60 italic font-display">
+          "The interface feels considered, unhurried, and expert."
+        </p>
       </div>
     </aside>
   );
 };
 
-function NavItem({ icon, label, count, active, onClick }: { icon: any, label: string, count?: number, active: boolean, onClick: () => void }) {
+function NavItem({ label, count, active, onClick }: { label: string, count?: number, active: boolean, onClick: () => void }) {
   return (
-    <button onClick={onClick} className={cn("nav-item w-full flex items-center justify-between group", active && "active")}>
-      <div className="flex items-center gap-3">
-        <span className={cn("transition-colors", active ? "text-cyan" : "text-white/20 group-hover:text-white/60")}>{icon}</span>
-        <span className="font-bold">{label}</span>
-      </div>
+    <button onClick={onClick} className={cn("nav-item w-full flex items-center justify-between group px-0 border-none bg-transparent hover:bg-transparent", active && "active")}>
+      <span className={cn("font-medium transition-colors", active ? "text-magenta underline decoration-magenta/30 underline-offset-8" : "text-charcoal/70 group-hover:text-magenta")}>{label}</span>
       {count !== undefined && (
         <span className={cn(
-          "text-[10px] px-2 py-0.5 rounded-lg font-black transition-all", 
-          active ? "bg-cyan/20 text-cyan" : "bg-white/5 text-white/20 group-hover:bg-white/10"
+          "text-[10px] font-bold transition-all", 
+          active ? "text-magenta" : "text-ash opacity-40 group-hover:opacity-100"
         )}>
-          {count}
+          {count.toString().padStart(2, '0')}
         </span>
       )}
     </button>
