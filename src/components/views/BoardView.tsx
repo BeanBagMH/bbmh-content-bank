@@ -49,7 +49,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ items, onCardClick, onNewC
           key={status}
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, status)}
-          className="min-w-[320px] max-w-[320px] flex flex-col max-h-full bg-light-grey/30 rounded-2xl p-4"
+          className="min-w-[280px] max-w-[280px] flex flex-col max-h-full bg-light-grey/30 rounded-2xl p-4"
         >
           {/* Column Header */}
           <div className="flex items-center justify-between mb-6 px-2">
@@ -84,10 +84,10 @@ export const BoardView: React.FC<BoardViewProps> = ({ items, onCardClick, onNewC
                   {item.title}
                 </h4>
 
-                {item.content_cluster && (
+                {item.cluster && (
                   <div className="mb-4">
                     <span className="text-[9px] font-bold text-ash/60 uppercase tracking-widest bg-light-grey px-2 py-1 rounded-md">
-                      {item.content_cluster}
+                      {item.cluster}
                     </span>
                   </div>
                 )}

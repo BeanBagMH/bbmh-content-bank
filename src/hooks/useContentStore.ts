@@ -1,26 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { ContentItem, Idea, Campaign, Thumbnail } from '../types';
+import type { ContentItem, Idea, Campaign, ThumbnailAsset } from '../types';
 import { db, supabase } from '../lib/supabase';
 
 export function useContentStore() {
   const [items, setItems] = useState<ContentItem[]>([]);
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [thumbnails, setThumbnails] = useState<Thumbnail[]>([]);
+  const [thumbnails, setThumbnails] = useState<ThumbnailAsset[]>([]);
   
   const [initialized, setInitialized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentProfile, setCurrentProfile] = useState<any>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (userEmail?: string) => {
     setLoading(true);
     try {
       const [itemsData, ideasData, campaignsData, thumbnailsData] = await Promise.all([
         db.getItems(),
-        db.getIdeas().catch(() => []), // Graceful fallback if table doesn't exist yet
+        db.getIdeas().catch(() => []),
         db.getCampaigns().catch(() => []),
-        db.getThumbnails().catch(() => [])
+        db.getThumbnailAssets().catch(() => [])
       ]);
       
       setItems(itemsData);
@@ -28,9 +28,10 @@ export function useContentStore() {
       setCampaigns(campaignsData);
       setThumbnails(thumbnailsData);
       
-      // Fetch current profile (mocking with a default email for now or using auth if available)
-      const profile = await db.getProfile('murphypatel11@gmail.com');
-      setCurrentProfile(profile);
+      if (userEmail) {
+        const profile = await db.getProfile(userEmail);
+        setCurrentProfile(profile);
+      }
       
       setInitialized(true);
       setLoading(false);
@@ -43,7 +44,10 @@ export function useContentStore() {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    // Initial fetch with current user if exists
+    supabase.auth.getSession().then(({ data: { session } }: any) => {
+      fetchData(session?.user?.email);
+    });
 
     // --- Realtime Subscription Safety Shield ---
     if (!supabase) return;
@@ -55,8 +59,9 @@ export function useContentStore() {
     channel
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ideas' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'campaigns' }, () => fetchData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'thumbnails' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'thumbnail_assets' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'team_members' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'content_items' }, () => fetchData())
       .subscribe();
 
     return () => {
@@ -98,7 +103,7 @@ export function useContentStore() {
   };
 
   const duplicateItem = async (item: ContentItem) => {
-    const { id, created_at, updated_at, last_updated_at, ...rest } = item;
+    const { id, created_at, updated_at, ...rest } = item;
     return addItem({ ...rest, title: `${item.title} (Copy)` });
   };
 
@@ -181,9 +186,9 @@ export function useContentStore() {
   };
 
   // --- Thumbnail Actions ---
-  const addThumbnail = async (thumbnail: Partial<Thumbnail>) => {
+  const addThumbnail = async (thumbnail: Partial<ThumbnailAsset>) => {
     try {
-      const newThumbnail = await db.addThumbnail(thumbnail);
+      const newThumbnail = await db.addThumbnailAsset(thumbnail);
       setThumbnails(prev => [newThumbnail, ...prev]);
       return newThumbnail;
     } catch (err: any) {
@@ -192,9 +197,9 @@ export function useContentStore() {
     }
   };
 
-  const updateThumbnail = async (id: string, updates: Partial<Thumbnail>) => {
+  const updateThumbnail = async (id: string, updates: Partial<ThumbnailAsset>) => {
     try {
-      const updatedThumbnail = await db.updateThumbnail(id, updates);
+      const updatedThumbnail = await db.updateThumbnailAsset(id, updates);
       setThumbnails(prev => prev.map(t => t.id === id ? updatedThumbnail : t));
       return updatedThumbnail;
     } catch (err: any) {
@@ -205,7 +210,7 @@ export function useContentStore() {
 
   const deleteThumbnail = async (id: string) => {
     try {
-      await db.deleteThumbnail(id);
+      await db.deleteThumbnailAsset(id);
       setThumbnails(prev => prev.filter(t => t.id !== id));
     } catch (err: any) {
       setError(err.message);

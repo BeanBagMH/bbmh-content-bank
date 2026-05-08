@@ -45,11 +45,11 @@ export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClos
     if (!formData.title) return;
     
     try {
-      const { reference_url, asset_link, ...rest } = formData;
+      const { content_cluster, ...rest } = formData;
       await addItem({ 
         ...rest, 
-        reference_links: reference_url ? [reference_url] : [],
-        asset_links: asset_link ? [asset_link] : []
+        cluster: content_cluster,
+        archived: false
       });
       onClose();
       setFormData({
@@ -68,8 +68,10 @@ export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClos
         reference_url: '',
         asset_link: ''
       });
-    } catch (e) {
+      alert('Content created successfully!');
+    } catch (e: any) {
       console.error(e);
+      alert(`Failed to create content: ${e.message}`);
     }
   };
 

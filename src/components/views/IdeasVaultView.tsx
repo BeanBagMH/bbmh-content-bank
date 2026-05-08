@@ -1,9 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Lightbulb, Plus, MoreVertical, Trash2, Rocket, Search } from 'lucide-react';
+import { Lightbulb, Trash2, Rocket, Search } from 'lucide-react';
 import { useContentStore } from '../../hooks/useContentStore';
-import type { Idea } from '../../types';
-import { cn } from '../common/Badge';
 
 export const IdeasVaultView: React.FC = () => {
   const { ideas, deleteIdea, convertIdeaToContent } = useContentStore();
@@ -60,14 +58,30 @@ export const IdeasVaultView: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
                   <button 
-                    onClick={() => convertIdeaToContent(idea)}
+                    onClick={async () => {
+                      try {
+                        await convertIdeaToContent(idea);
+                        alert('Idea promoted to Content Bank!');
+                      } catch (e: any) {
+                        alert(`Failed to promote: ${e.message}`);
+                      }
+                    }}
                     className="p-2 hover:bg-cyan/10 rounded-lg text-cyan transition-all"
                     title="Promote to Content Bank"
                   >
                     <Rocket size={16} />
                   </button>
                   <button 
-                    onClick={() => deleteIdea(idea.id)}
+                    onClick={async () => {
+                      if (confirm('Discard this idea?')) {
+                        try {
+                          await deleteIdea(idea.id);
+                          alert('Idea discarded');
+                        } catch (e: any) {
+                          alert(`Failed to discard: ${e.message}`);
+                        }
+                      }
+                    }}
                     className="p-2 hover:bg-red-50 rounded-lg text-red-400 transition-all"
                     title="Discard"
                   >

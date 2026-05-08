@@ -5,6 +5,7 @@ import { Sidebar } from './components/layout/Sidebar';
 import { Topbar } from './components/layout/Topbar';
 import { DashboardView } from './components/views/DashboardView';
 import { BoardView } from './components/views/BoardView';
+import { ScriptsView } from './components/views/ScriptsView';
 import { ListView } from './components/views/ListView';
 import { CalendarView } from './components/views/CalendarView';
 import { GridView } from './components/views/GridView';
@@ -43,6 +44,12 @@ export default function App() {
   });
   
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [detailTab, setDetailTab] = React.useState<string>('info');
+
+  const openDetail = (id: string, tab: string = 'info') => {
+    setSelectedId(id);
+    setDetailTab(tab);
+  };
   const [isNewContentModalOpen, setIsNewContentModalOpen] = React.useState(false);
   const [prefilledDate, setPrefilledDate] = React.useState<string | null>(null);
   const [prefilledStatus, setPrefilledStatus] = React.useState<string>('Raw Idea');
@@ -51,6 +58,20 @@ export default function App() {
   const [authLoading, setAuthLoading] = React.useState(true);
 
   React.useEffect(() => {
+    // Audit bypass with extended mock data
+    if (window.location.search.includes('audit=true')) {
+      console.log('--- AUDIT MODE ACTIVATED ---');
+      setSession({ 
+        user: { 
+          email: 'audit@bbmh.com', 
+          id: '00000000-0000-0000-0000-000000000000',
+          user_metadata: { full_name: 'Audit Master' }
+        } 
+      });
+      setAuthLoading(false);
+      return;
+    }
+
     if (!isConfigured) {
       setAuthLoading(false);
       return;
@@ -58,6 +79,9 @@ export default function App() {
 
     supabase.auth.getSession().then(({ data: { session } }: any) => {
       setSession(session);
+      setAuthLoading(false);
+    }).catch((err: any) => {
+      console.error('Session fetch failed:', err);
       setAuthLoading(false);
     });
 
@@ -91,6 +115,13 @@ export default function App() {
     'thumbnails': thumbnails.length,
     'performance': items.filter(i => i.status === 'Published').length,
   };
+
+  // Search Navigation Guard: Auto-switch to Content Bank when searching
+  React.useEffect(() => {
+    if (filter.search && view !== 'content-bank' && view !== 'ideas-vault' && view !== 'planner') {
+      setView('content-bank');
+    }
+  }, [filter.search, view]);
 
   if (!isConfigured) {
     return <SetupRequired />;
@@ -136,17 +167,17 @@ export default function App() {
               transition={{ duration: 0.3 }}
               className="h-full"
             >
-              {view === 'dashboard' && <DashboardView items={items} setView={setView} />}
+              {view === 'dashboard' && <DashboardView items={filteredItems} setView={setView} />}
               
               {view === 'content-bank' && (
                 <>
-                  {filter.subView === 'grid' && <GridView items={filteredItems} onCardClick={setSelectedId} />}
-                  {filter.subView === 'board' && <BoardView items={filteredItems} onCardClick={setSelectedId} />}
-                  {filter.subView === 'list' && <ListView items={filteredItems} onCardClick={setSelectedId} />}
+                  {filter.subView === 'grid' && <GridView items={filteredItems} onCardClick={(id) => openDetail(id, 'info')} />}
+                  {filter.subView === 'board' && <BoardView items={filteredItems} onCardClick={(id) => openDetail(id, 'info')} />}
+                  {filter.subView === 'list' && <ListView items={filteredItems} onCardClick={(id) => openDetail(id, 'info')} />}
                   {filter.subView === 'calendar' && (
                     <CalendarView 
                       items={filteredItems} 
-                      onCardClick={setSelectedId} 
+                      onCardClick={(id) => openDetail(id, 'info')} 
                       onNewContent={(date?: string) => {
                         setPrefilledDate(date || null);
                         setIsNewContentModalOpen(true);
@@ -158,8 +189,8 @@ export default function App() {
 
               {view === 'calendar' && (
                 <CalendarView 
-                  items={items} 
-                  onCardClick={setSelectedId} 
+                  items={filteredItems} 
+                  onCardClick={(id) => openDetail(id, 'info')} 
                   onNewContent={(date?: string) => {
                     setPrefilledDate(date || null);
                     setIsNewContentModalOpen(true);
@@ -169,8 +200,8 @@ export default function App() {
 
               {view === 'planner' && (
                 <DualView 
-                  items={items} 
-                  onCardClick={setSelectedId} 
+                  items={filteredItems} 
+                  onCardClick={(id) => openDetail(id, 'info')} 
                   onNewContent={(date?: string, status?: string) => {
                     setPrefilledDate(date || null);
                     setPrefilledStatus(status || 'Raw Idea');
@@ -184,10 +215,10 @@ export default function App() {
 
               {/* Scripts Section */}
               {view === 'scripts' && (
-                <div className="space-y-12">
-                   <h2 className="text-5xl font-display font-bold text-dark tracking-tighter">Script Sanctuary</h2>
-                   <ListView items={items.filter(i => i.status === 'Scripting' || i.status === 'Review')} onCardClick={setSelectedId} />
-                </div>
+                <ScriptsView 
+                  items={items.filter(i => !i.archived)} 
+                  onCardClick={(id) => openDetail(id, 'writing')} 
+                />
               )}
 
               {view === 'campaigns' && <CampaignsView campaigns={campaigns} items={items} />}
@@ -201,6 +232,7 @@ export default function App() {
 
       <DetailPanel 
         selectedId={selectedId} 
+        initialTab={detailTab}
         onClose={() => setSelectedId(null)} 
       />
 

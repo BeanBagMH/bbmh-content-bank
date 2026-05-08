@@ -12,12 +12,11 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
   const publishedItems = items.filter(i => i.status === 'Published');
   
   const totalStats = publishedItems.reduce((acc, item) => {
-    const stats = item.performance_stats || {};
     return {
-      views: acc.views + (stats.views || 0),
-      likes: acc.likes + (stats.likes || 0),
-      leads: acc.leads + (stats.leads || 0),
-      shares: acc.shares + (stats.shares || 0)
+      views: acc.views + (item.views || 0),
+      likes: acc.likes + (item.likes || 0),
+      leads: acc.leads + (item.leads || 0),
+      shares: acc.shares + (item.shares || 0)
     };
   }, { views: 0, likes: 0, leads: 0, shares: 0 });
 
@@ -64,10 +63,12 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
                        <div className="text-[14px] font-bold text-dark group-hover:text-cyan transition-colors">{item.title}</div>
                        <div className="text-[10px] font-bold text-ash/40 uppercase tracking-widest mt-1">{item.platform}</div>
                     </td>
-                    <td className="p-8 text-center text-sm font-bold text-dark">{(item.performance_stats?.views || 0).toLocaleString()}</td>
-                    <td className="p-8 text-center text-sm font-bold text-dark">{item.performance_stats?.ctr || 0}%</td>
+                    <td className="p-8 text-center text-sm font-bold text-dark">{(item.views || 0).toLocaleString()}</td>
+                    <td className="p-8 text-center text-sm font-bold text-dark">
+                      {item.views > 0 ? (((item.likes || 0) + (item.comments || 0) + (item.shares || 0)) / item.views * 100).toFixed(1) : 0}%
+                    </td>
                     <td className="p-8 text-center">
-                       <span className="px-3 py-1 bg-turquoise/10 text-cyan rounded-full text-[11px] font-black">{item.performance_stats?.leads || 0}</span>
+                       <span className="px-3 py-1 bg-turquoise/10 text-cyan rounded-full text-[11px] font-black">{item.leads || 0}</span>
                     </td>
                     <td className="p-8 text-right">
                        <div className="flex items-center justify-end gap-2 text-turquoise">

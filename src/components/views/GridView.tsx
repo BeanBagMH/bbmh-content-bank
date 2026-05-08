@@ -91,7 +91,7 @@ export const GridView: React.FC<GridViewProps> = ({ items, onCardClick }) => {
 
                  <div className="flex items-center gap-2">
                     <Tag size={12} className="text-cyan/40" />
-                    <span className="text-[10px] font-bold text-cyan uppercase tracking-[0.2em]">{item.content_cluster || 'General'}</span>
+                    <span className="text-[10px] font-bold text-cyan uppercase tracking-[0.2em]">{item.cluster || 'General'}</span>
                  </div>
                </>
              )}

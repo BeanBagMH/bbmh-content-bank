@@ -34,8 +34,10 @@ export const NewCampaignModal: React.FC<NewCampaignModalProps> = ({ isOpen, onCl
         notes: ''
       });
       onClose();
-    } catch (e) {
+      alert('Strategic cluster launched!');
+    } catch (e: any) {
       console.error(e);
+      alert(`Failed to launch cluster: ${e.message}`);
     }
   };
 

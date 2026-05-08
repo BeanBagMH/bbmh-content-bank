@@ -1,11 +1,11 @@
 import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Image as ImageIcon, Plus, Maximize2, Download } from 'lucide-react';
-import type { Thumbnail, ContentItem } from '../../types';
+import type { ThumbnailAsset, ContentItem } from '../../types';
 import { useContentStore } from '../../hooks/useContentStore';
 
 interface ThumbnailBankViewProps {
-  thumbnails: Thumbnail[];
+  thumbnails: ThumbnailAsset[];
   items: ContentItem[];
 }
 
@@ -22,7 +22,7 @@ export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails
           title: file.name,
           status: 'Draft',
           image_url: localUrl,
-          headline: 'New Hook Concept',
+          thumbnail_headline: 'New Hook Concept',
           visual_description: 'Uploaded from device'
         });
       } catch (err) {
@@ -62,7 +62,7 @@ export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails
             <ThumbnailCard 
               key={thumb.id} 
               thumbnail={thumb} 
-              parentItem={items.find(i => i.id === thumb.content_item_id)} 
+              parentItem={items.find(i => i.id === thumb.related_content_id)} 
             />
           ))
         ) : (

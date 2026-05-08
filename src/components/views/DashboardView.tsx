@@ -17,14 +17,25 @@ interface DashboardViewProps {
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ items, setView }) => {
-  const stats = {
-    total: items.length,
-    ideas: items.filter(i => i.status === 'Raw Idea').length,
-    scripting: items.filter(i => i.status === 'Scripting').length,
-    ready: items.filter(i => i.status === 'Review' || i.status === 'Scheduled').length,
-    published: items.filter(i => i.status === 'Published').length,
-    stuck: items.filter(i => i.priority === 'High' && i.status !== 'Published').length
-  };
+  const stats = React.useMemo(() => {
+    const statusCounts = items.reduce((acc: any, item) => {
+      acc[item.status] = (acc[item.status] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Sort statuses by count
+    const sortedStatuses = Object.entries(statusCounts)
+      .sort(([, a]: any, [, b]: any) => b - a)
+      .slice(0, 3);
+
+    return {
+      total: items.length,
+      topStatuses: sortedStatuses,
+      ready: items.filter(i => i.status === 'Review' || i.status === 'Scheduled').length,
+      stuck: items.filter(i => i.priority === 'High' && i.status !== 'Published').length,
+      ideasCount: items.filter(i => i.status === 'Raw Idea').length
+    };
+  }, [items]);
 
   const scheduledThisWeek = items.filter(i => {
     if (!i.publish_date) return false;
@@ -65,9 +76,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ items, setView }) 
             <span className="text-xl font-display italic text-turquoise">Pieces Active</span>
           </div>
           <div className="flex gap-8 mt-12 pt-8 border-t border-white/10">
-            <StatItem label="Ideas" value={stats.ideas} color="text-yellow-400" />
-            <StatItem label="Scripting" value={stats.scripting} color="text-cyan" />
-            <StatItem label="Published" value={stats.published} color="text-turquoise" />
+            {stats.topStatuses.map(([status, count]: any, idx) => (
+              <StatItem 
+                key={status} 
+                label={status} 
+                value={count} 
+                color={idx === 0 ? "text-cyan" : idx === 1 ? "text-yellow-400" : "text-turquoise"} 
+              />
+            ))}
+            {stats.topStatuses.length === 0 && (
+               <StatItem label="Brain Dump" value={0} color="text-yellow-400" />
+            )}
           </div>
         </DashboardCard>
 
@@ -157,7 +176,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ items, setView }) 
             <p className="text-ash/60 text-[11px] font-bold uppercase tracking-widest mt-4">Approved & Finalized</p>
           </div>
           <button 
-            onClick={() => setView('content-bank')}
+            onClick={() => {
+              setView('content-bank');
+              // We need to pass setFilter too if we want to filter, but DashboardView doesn't have it.
+              // For now, just setView is enough, or I can update DashboardView props.
+              setView('content-bank');
+            }}
             className="mt-8 text-[11px] font-bold text-cyan uppercase tracking-[0.2em] hover:tracking-[0.3em] transition-all"
           >
             Review Pieces →

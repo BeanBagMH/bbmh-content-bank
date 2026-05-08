@@ -22,6 +22,7 @@ import type { ContentItem, ContentStatus, ContentType, Priority, Platform, Conte
 interface DetailPanelProps {
   selectedId: string | null;
   onClose: () => void;
+  initialTab?: string;
 }
 
 const TABS = [
@@ -32,9 +33,15 @@ const TABS = [
   { id: 'performance', label: 'Performance', icon: BarChart3 },
 ];
 
-export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose }) => {
+export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, initialTab = 'info' }) => {
   const { items, campaigns, updateItem, deleteItem, duplicateItem } = useContentStore();
-  const [activeTab, setActiveTab] = React.useState('info');
+  const [activeTab, setActiveTab] = React.useState(initialTab);
+
+  React.useEffect(() => {
+    if (selectedId) {
+      setActiveTab(initialTab);
+    }
+  }, [selectedId, initialTab]);
   const [isSaving, setIsSaving] = React.useState(false);
   const [hasChanges, setHasChanges] = React.useState(false);
   
@@ -59,25 +66,50 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
     try {
       await updateItem(selectedId, localItem);
       setHasChanges(false);
-      setTimeout(() => setIsSaving(false), 500);
-    } catch (e) {
+      setTimeout(() => {
+        setIsSaving(false);
+        alert('Changes saved successfully!');
+      }, 500);
+    } catch (e: any) {
       console.error(e);
       setIsSaving(false);
+      alert(`Failed to save changes: ${e.message}`);
     }
   };
 
   const handleDelete = async () => {
     if (!selectedId) return;
     if (confirm('Permanently delete this strategy?')) {
-      await deleteItem(selectedId);
-      onClose();
+      try {
+        await deleteItem(selectedId);
+        onClose();
+        alert('Deleted successfully');
+      } catch (e: any) {
+        alert(`Failed to delete: ${e.message}`);
+      }
     }
   };
 
   const handleDuplicate = async () => {
     if (!originalItem) return;
-    await duplicateItem(originalItem);
-    onClose();
+    try {
+      await duplicateItem(originalItem);
+      onClose();
+      alert('Duplicated successfully');
+    } catch (e: any) {
+      alert(`Failed to duplicate: ${e.message}`);
+    }
+  };
+
+  const handleArchive = async () => {
+    if (!selectedId) return;
+    try {
+      await updateItem(selectedId, { archived: true });
+      onClose();
+      alert('Archived successfully');
+    } catch (e: any) {
+      alert(`Failed to archive: ${e.message}`);
+    }
   };
 
   if (!selectedId || !localItem) return null;
@@ -134,7 +166,7 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
                  title="Share Strategy" 
                />
                <ActionButton onClick={handleDuplicate} icon={Copy} title="Duplicate" />
-               <ActionButton onClick={() => updateItem(selectedId, { archived: true })} icon={Archive} title="Archive" />
+               <ActionButton onClick={handleArchive} icon={Archive} title="Archive" />
                <ActionButton onClick={handleDelete} icon={Trash2} title="Delete" className="hover:text-red-500 hover:bg-red-50" />
             </div>
           </div>
@@ -176,7 +208,7 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
                   <PropertyField label="Status" value={localItem.status} onChange={(v) => handleLocalUpdate({ status: v as ContentStatus })} options={['Raw Idea', 'Selected', 'Research', 'Scripting', 'Design', 'Editing', 'Review', 'Scheduled', 'Published']} />
                   <PropertyField label="Type" value={localItem.content_type} onChange={(v) => handleLocalUpdate({ content_type: v as ContentType })} options={['Reel', 'Carousel', 'LinkedIn Post', 'Blog', 'YouTube Short', 'Instagram Post', 'Twitter/X Post', 'Case Study', 'Email', 'Ad Creative', 'Script']} />
                   <PropertyField label="Platform" value={localItem.platform} onChange={(v) => handleLocalUpdate({ platform: v as Platform })} options={['Instagram', 'LinkedIn', 'YouTube', 'Website Blog', 'Twitter/X', 'Email', 'Multi-platform']} />
-                  <PropertyField label="Cluster" value={localItem.content_cluster} onChange={(v) => handleLocalUpdate({ content_cluster: v as ContentCluster })} options={['Brand Invisibility', 'Trust Building', 'Price War', 'Website Strategy', 'Branding', 'Design Education', 'AI Workflow', 'Client Case Study', 'Behind The Scenes', 'Founder Story', 'Sales / Outreach', 'General']} />
+                  <PropertyField label="Cluster" value={localItem.cluster} onChange={(v) => handleLocalUpdate({ cluster: v as ContentCluster })} options={['Brand Invisibility', 'Trust Building', 'Price War', 'Website Strategy', 'Branding', 'Design Education', 'AI Workflow', 'Client Case Study', 'Behind The Scenes', 'Founder Story', 'Sales / Outreach', 'General']} />
                   <PropertyField label="Priority" value={localItem.priority} onChange={(v) => handleLocalUpdate({ priority: v as Priority })} options={['Low', 'Medium', 'High', 'Urgent']} />
                   <PropertyField 
                     label="Campaign Cluster" 
@@ -284,12 +316,12 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
              {activeTab === 'performance' && (
                <div className="space-y-10">
                   <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-                     <PerformanceInput label="Views" value={localItem.performance_stats?.views} onChange={(v: string) => handleLocalUpdate({ performance_stats: { ...localItem.performance_stats, views: parseInt(v) || 0 } })} />
-                     <PerformanceInput label="Likes" value={localItem.performance_stats?.likes} onChange={(v: string) => handleLocalUpdate({ performance_stats: { ...localItem.performance_stats, likes: parseInt(v) || 0 } })} />
-                     <PerformanceInput label="Comments" value={localItem.performance_stats?.comments} onChange={(v: string) => handleLocalUpdate({ performance_stats: { ...localItem.performance_stats, comments: parseInt(v) || 0 } })} />
-                     <PerformanceInput label="Shares" value={localItem.performance_stats?.shares} onChange={(v: string) => handleLocalUpdate({ performance_stats: { ...localItem.performance_stats, shares: parseInt(v) || 0 } })} />
-                     <PerformanceInput label="Saves" value={localItem.performance_stats?.saves} onChange={(v: string) => handleLocalUpdate({ performance_stats: { ...localItem.performance_stats, saves: parseInt(v) || 0 } })} />
-                     <PerformanceInput label="Leads" value={localItem.performance_stats?.leads} onChange={(v: string) => handleLocalUpdate({ performance_stats: { ...localItem.performance_stats, leads: parseInt(v) || 0 } })} />
+                     <PerformanceInput label="Views" value={localItem.views} onChange={(v: string) => handleLocalUpdate({ views: parseInt(v) || 0 })} />
+                     <PerformanceInput label="Likes" value={localItem.likes} onChange={(v: string) => handleLocalUpdate({ likes: parseInt(v) || 0 })} />
+                     <PerformanceInput label="Comments" value={localItem.comments} onChange={(v: string) => handleLocalUpdate({ comments: parseInt(v) || 0 })} />
+                     <PerformanceInput label="Shares" value={localItem.shares} onChange={(v: string) => handleLocalUpdate({ shares: parseInt(v) || 0 })} />
+                     <PerformanceInput label="Saves" value={localItem.saves} onChange={(v: string) => handleLocalUpdate({ saves: parseInt(v) || 0 })} />
+                     <PerformanceInput label="Leads" value={localItem.leads} onChange={(v: string) => handleLocalUpdate({ leads: parseInt(v) || 0 })} />
                   </div>
                </div>
              )}

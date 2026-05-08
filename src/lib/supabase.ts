@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { ContentItem, Idea, Campaign, Thumbnail } from '../types';
+import type { ContentItem, Idea, Campaign, ThumbnailAsset } from '../types';
 
 const getEnv = (key: string) => import.meta.env[key] || '';
 
@@ -33,7 +33,10 @@ export const db = {
       .select('*')
       .order('created_at', { ascending: false });
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching content items:', error);
+      throw error;
+    }
     return data as ContentItem[];
   },
 
@@ -44,7 +47,10 @@ export const db = {
       .insert([item])
       .select();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error adding content item:', error);
+      throw error;
+    }
     return data[0] as ContentItem;
   },
 
@@ -56,7 +62,10 @@ export const db = {
       .eq('id', id)
       .select();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error updating content item:', error);
+      throw error;
+    }
     return data[0] as ContentItem;
   },
 
@@ -67,7 +76,10 @@ export const db = {
       .delete()
       .eq('id', id);
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error deleting content item:', error);
+      throw error;
+    }
   },
 
   // --- Ideas ---
@@ -77,7 +89,10 @@ export const db = {
       .from('ideas')
       .select('*')
       .order('created_at', { ascending: false });
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching ideas:', error);
+      throw error;
+    }
     return data as Idea[];
   },
 
@@ -87,7 +102,10 @@ export const db = {
       .from('ideas')
       .insert([idea])
       .select();
-    if (error) throw error;
+    if (error) {
+      console.error('Error adding idea:', error);
+      throw error;
+    }
     return data[0] as Idea;
   },
 
@@ -98,7 +116,10 @@ export const db = {
       .update(updates)
       .eq('id', id)
       .select();
-    if (error) throw error;
+    if (error) {
+      console.error('Error updating idea:', error);
+      throw error;
+    }
     return data[0] as Idea;
   },
 
@@ -108,7 +129,10 @@ export const db = {
       .from('ideas')
       .delete()
       .eq('id', id);
-    if (error) throw error;
+    if (error) {
+      console.error('Error deleting idea:', error);
+      throw error;
+    }
   },
 
   // --- Campaigns ---
@@ -118,7 +142,10 @@ export const db = {
       .from('campaigns')
       .select('*')
       .order('created_at', { ascending: false });
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching campaigns:', error);
+      throw error;
+    }
     return data as Campaign[];
   },
 
@@ -128,7 +155,10 @@ export const db = {
       .from('campaigns')
       .insert([campaign])
       .select();
-    if (error) throw error;
+    if (error) {
+      console.error('Error adding campaign:', error);
+      throw error;
+    }
     return data[0] as Campaign;
   },
 
@@ -139,7 +169,10 @@ export const db = {
       .update(updates)
       .eq('id', id)
       .select();
-    if (error) throw error;
+    if (error) {
+      console.error('Error updating campaign:', error);
+      throw error;
+    }
     return data[0] as Campaign;
   },
 
@@ -149,48 +182,63 @@ export const db = {
       .from('campaigns')
       .delete()
       .eq('id', id);
-    if (error) throw error;
+    if (error) {
+      console.error('Error deleting campaign:', error);
+      throw error;
+    }
   },
 
   // --- Thumbnails ---
-  async getThumbnails() {
+  async getThumbnailAssets() {
     if (!supabase) return [];
     const { data, error } = await supabase
-      .from('thumbnails')
+      .from('thumbnail_assets')
       .select('*')
       .order('created_at', { ascending: false });
-    if (error) throw error;
-    return data as Thumbnail[];
+    if (error) {
+      console.error('Error fetching thumbnail assets:', error);
+      throw error;
+    }
+    return data as ThumbnailAsset[];
   },
 
-  async addThumbnail(thumbnail: Partial<Thumbnail>) {
+  async addThumbnailAsset(asset: Partial<ThumbnailAsset>) {
     if (!supabase) throw new Error('Database not configured');
     const { data, error } = await supabase
-      .from('thumbnails')
-      .insert([thumbnail])
+      .from('thumbnail_assets')
+      .insert([asset])
       .select();
-    if (error) throw error;
-    return data[0] as Thumbnail;
+    if (error) {
+      console.error('Error adding thumbnail asset:', error);
+      throw error;
+    }
+    return data[0] as ThumbnailAsset;
   },
 
-  async updateThumbnail(id: string, updates: Partial<Thumbnail>) {
+  async updateThumbnailAsset(id: string, updates: Partial<ThumbnailAsset>) {
     if (!supabase) throw new Error('Database not configured');
     const { data, error } = await supabase
-      .from('thumbnails')
+      .from('thumbnail_assets')
       .update(updates)
       .eq('id', id)
       .select();
-    if (error) throw error;
-    return data[0] as Thumbnail;
+    if (error) {
+      console.error('Error updating thumbnail asset:', error);
+      throw error;
+    }
+    return data[0] as ThumbnailAsset;
   },
 
-  async deleteThumbnail(id: string) {
+  async deleteThumbnailAsset(id: string) {
     if (!supabase) throw new Error('Database not configured');
     const { error } = await supabase
-      .from('thumbnails')
+      .from('thumbnail_assets')
       .delete()
       .eq('id', id);
-    if (error) throw error;
+    if (error) {
+      console.error('Error deleting thumbnail asset:', error);
+      throw error;
+    }
   },
 
   // --- Conversion ---
@@ -204,12 +252,15 @@ export const db = {
         title: idea.title,
         notes: idea.note,
         platform: idea.platform,
-        content_cluster: idea.content_cluster,
+        cluster: idea.cluster,
         status: 'Raw Idea'
       }])
       .select();
       
-    if (contentError) throw contentError;
+    if (contentError) {
+      console.error('Error creating content from idea:', contentError);
+      throw contentError;
+    }
     const newItem = contentData[0] as ContentItem;
     
     // 2. Link idea to content
@@ -218,7 +269,10 @@ export const db = {
       .update({ converted_to_content_id: newItem.id, status: 'Converted' })
       .eq('id', idea.id);
       
-    if (ideaError) throw ideaError;
+    if (ideaError) {
+      console.error('Error linking idea to content:', ideaError);
+      throw ideaError;
+    }
     
     return newItem;
   },
@@ -231,7 +285,10 @@ export const db = {
       .select('value')
       .eq('key', key)
       .single();
-    if (error && error.code !== 'PGRST116') throw error;
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching settings:', error);
+      throw error;
+    }
     return data?.value;
   },
 
@@ -241,19 +298,25 @@ export const db = {
       .from('workspace_settings')
       .upsert({ key, value, updated_at: new Date().toISOString() })
       .select();
-    if (error) throw error;
+    if (error) {
+      console.error('Error updating settings:', error);
+      throw error;
+    }
     return data[0];
   },
 
-  // --- Profiles (using team_members) ---
+  // --- Profiles (using team_members or workspace_settings) ---
   async getProfile(email: string) {
     if (!supabase) return null;
     const { data, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('email', email)
-      .single();
-    if (error && error.code !== 'PGRST116') throw error;
+      .maybeSingle();
+    if (error) {
+      console.error('Error fetching profile:', error);
+      throw error;
+    }
     return data;
   },
 
@@ -264,7 +327,10 @@ export const db = {
       .update(updates)
       .eq('id', id)
       .select();
-    if (error) throw error;
+    if (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
     return data[0];
   }
 };

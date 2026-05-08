@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Flag, Plus, Users, Layout, ArrowUpRight } from 'lucide-react';
 import type { Campaign, ContentItem } from '../../types';
 import { cn } from '../common/Badge';
-import { useContentStore } from '../../hooks/useContentStore';
 import { NewCampaignModal } from '../modals/NewCampaignModal';
 
 interface CampaignsViewProps {
@@ -42,12 +41,15 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({ campaigns, items }
             />
           ))
         ) : (
-          <div className="col-span-full py-32 flex flex-col items-center justify-center text-center bg-white border border-mist rounded-[40px] border-dashed">
+          <div 
+            onClick={() => setIsModalOpen(true)}
+            className="col-span-full py-32 flex flex-col items-center justify-center text-center bg-white border border-mist rounded-[40px] border-dashed cursor-pointer hover:bg-light-grey/30 transition-all"
+          >
              <div className="w-16 h-16 bg-light-grey rounded-full flex items-center justify-center mb-6 text-ash/20">
                 <Flag size={32} />
              </div>
              <p className="text-sm font-bold text-ash/40 uppercase tracking-widest">No active clusters found</p>
-             <button onClick={() => setIsModalOpen(true)} className="mt-6 text-cyan text-[11px] font-black uppercase tracking-widest hover:tracking-[0.2em] transition-all">Initialize First Campaign →</button>
+             <button className="mt-6 text-cyan text-[11px] font-black uppercase tracking-widest hover:tracking-[0.2em] transition-all">Initialize First Campaign →</button>
           </div>
         )}
       </div>

@@ -55,7 +55,7 @@ export interface ContentItem {
   content_type: ContentType;
   platform: Platform;
   status: ContentStatus;
-  content_cluster: ContentCluster;
+  cluster: ContentCluster;
   priority: Priority;
   owner: string | null;
   publish_date: string | null; // ISO Date
@@ -70,36 +70,30 @@ export interface ContentItem {
   // Creative Direction
   thumbnail_idea: string | null;
   visual_direction: string | null;
-  reference_links: string[];
-  asset_links: string[];
   reference_url: string | null;
   asset_link: string | null;
   
   // Publishing & Performance
   published_url: string | null;
-  performance_stats: {
-    views?: number;
-    likes?: number;
-    comments?: number;
-    shares?: number;
-    saves?: number;
-    ctr?: number;
-    leads?: number;
-  };
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  saves: number;
+  leads: number;
   
   campaign_id: string | null;
   archived: boolean;
   created_at: string;
   updated_at: string;
-  last_updated_at: string;
 }
 
 export interface Idea {
   id: string;
   title: string;
   note: string | null;
-  platform: Platform | null;
-  content_cluster: ContentCluster | null;
+  platform: Platform;
+  cluster: ContentCluster;
   status: string;
   converted_to_content_id: string | null;
   archived: boolean;
@@ -119,10 +113,10 @@ export interface Campaign {
   updated_at: string;
 }
 
-export interface Thumbnail {
+export interface ThumbnailAsset {
   id: string;
   title: string;
-  content_item_id: string | null;
+  related_content_id: string | null;
   thumbnail_headline: string | null;
   visual_description: string | null;
   image_url: string | null;

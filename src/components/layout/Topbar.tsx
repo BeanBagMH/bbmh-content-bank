@@ -4,7 +4,7 @@ import {
   Plus, 
   Lightbulb, 
   LayoutGrid,
-  Layout,
+  Columns,
   List,
   CalendarDays
 } from 'lucide-react';
@@ -55,21 +55,25 @@ export const Topbar: React.FC<TopbarProps> = ({
             icon={LayoutGrid} 
             active={filter.subView === 'grid'} 
             onClick={() => setFilter({ ...filter, subView: 'grid' })} 
-          />
-          <ViewButton 
-            icon={Layout} 
-            active={filter.subView === 'board'} 
-            onClick={() => setFilter({ ...filter, subView: 'board' })} 
+            title="Grid View"
           />
           <ViewButton 
             icon={List} 
             active={filter.subView === 'list'} 
             onClick={() => setFilter({ ...filter, subView: 'list' })} 
+            title="List View"
+          />
+          <ViewButton 
+            icon={Columns} 
+            active={filter.subView === 'board'} 
+            onClick={() => setFilter({ ...filter, subView: 'board' })} 
+            title="Kanban Board"
           />
           <ViewButton 
             icon={CalendarDays} 
             active={filter.subView === 'calendar'} 
             onClick={() => setFilter({ ...filter, subView: 'calendar' })} 
+            title="Calendar View"
           />
         </div>
       )}
@@ -98,9 +102,10 @@ export const Topbar: React.FC<TopbarProps> = ({
   );
 };
 
-const ViewButton = ({ icon: Icon, active, onClick }: { icon: any, active: boolean, onClick: () => void }) => (
+const ViewButton = ({ icon: Icon, active, onClick, title }: { icon: any, active: boolean, onClick: () => void, title?: string }) => (
   <button 
     onClick={onClick}
+    title={title}
     className={cn(
       "p-2.5 rounded-lg transition-all duration-300",
       active ? "bg-white text-dark shadow-sm" : "text-ash/40 hover:text-ash"

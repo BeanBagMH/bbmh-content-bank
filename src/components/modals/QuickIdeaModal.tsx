@@ -24,15 +24,17 @@ export const QuickIdeaModal: React.FC<QuickIdeaModalProps> = ({ isOpen, onClose 
       await addIdea({
         title,
         note,
-        platform,
-        content_cluster: cluster,
-        status: 'New'
+        platform: platform || 'Multi-platform',
+        cluster: cluster || 'General',
+        archived: false
       });
       setTitle('');
       setNote('');
       onClose();
-    } catch (e) {
+      alert('Idea saved to vault!');
+    } catch (e: any) {
       console.error(e);
+      alert(`Failed to save idea: ${e.message}`);
     }
   };
 
