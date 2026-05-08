@@ -11,7 +11,10 @@ export const LoginPage: React.FC = () => {
           <h1 className="text-6xl font-display text-dark italic-serif leading-none">BBMh</h1>
           <div className="h-px w-12 bg-cyan mx-auto" />
           <p className="text-[10px] uppercase tracking-[0.4em] font-bold text-ash/80">Strategy Archive Access</p>
-          <span className="inline-block bg-cyan/10 text-cyan text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full">v3.0.1 Stable</span>
+          <div className="flex items-center gap-3 justify-center">
+            <span className="px-3 py-1 bg-dark text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg shadow-dark/20 animate-pulse">V3.1.5-FORCE-UPDATE</span>
+            <span className="text-ash/40 text-[10px] font-bold">Latest Build</span>
+          </div>
         </div>
 
         <div className="bg-white p-10 border border-mist shadow-[0_40px_80px_rgba(0,0,0,0.03)]">

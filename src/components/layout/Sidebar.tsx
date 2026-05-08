@@ -37,7 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, itemCoun
   };
 
   return (
-    <aside className="w-[280px] h-full bg-white border-r border-mist flex flex-col z-20">
+    <aside className="hidden lg:flex w-[280px] h-full bg-white border-r border-mist flex-col z-20">
       {/* Brand Header */}
       <div className="p-10 border-b border-mist">
         <div className="flex items-center gap-4 mb-2">
@@ -46,7 +46,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, itemCoun
           </div>
           <div>
             <h1 className="text-xl font-display font-bold tracking-tight text-dark">BBMh</h1>
-            <p className="text-[10px] font-bold text-ash uppercase tracking-[0.2em] opacity-60">Content OS V3</p>
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] font-bold text-ash uppercase tracking-[0.2em] opacity-60">Content OS</p>
+              <span className="text-[8px] bg-cyan/10 text-cyan px-1.5 py-0.5 rounded font-black uppercase tracking-tighter">V3.1.0-ULTIMATE</span>
+            </div>
           </div>
         </div>
       </div>

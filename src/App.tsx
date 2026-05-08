@@ -8,6 +8,11 @@ import { BoardView } from './components/views/BoardView';
 import { ListView } from './components/views/ListView';
 import { CalendarView } from './components/views/CalendarView';
 import { GridView } from './components/views/GridView';
+import { CampaignsView } from './components/views/CampaignsView';
+import { ThumbnailBankView } from './components/views/ThumbnailBankView';
+import { PerformanceView } from './components/views/PerformanceView';
+import { SettingsView } from './components/views/SettingsView';
+import { BottomNav } from './components/layout/BottomNav';
 import { DetailPanel } from './components/DetailPanel';
 import { NewContentModal } from './components/modals/NewContentModal';
 import { QuickIdeaModal } from './components/modals/QuickIdeaModal';
@@ -117,7 +122,7 @@ export default function App() {
           setFilter={setFilter}
         />
 
-        <section className="flex-1 overflow-auto p-12 custom-scrollbar">
+        <section className="flex-1 overflow-auto p-6 lg:p-12 pb-32 lg:pb-12 custom-scrollbar">
           <AnimatePresence mode="wait">
             <motion.div
               key={view + (view === 'content-bank' ? filter.subView : '')}
@@ -134,9 +139,11 @@ export default function App() {
                   {filter.subView === 'grid' && <GridView items={filteredItems} onCardClick={setSelectedId} />}
                   {filter.subView === 'board' && <BoardView items={filteredItems} onCardClick={setSelectedId} />}
                   {filter.subView === 'list' && <ListView items={filteredItems} onCardClick={setSelectedId} />}
-                  {filter.subView === 'calendar' && <CalendarView items={filteredItems} onCardClick={setSelectedId} />}
+                  {filter.subView === 'calendar' && <CalendarView items={filteredItems} onCardClick={setSelectedId} onNewContent={() => setIsNewContentModalOpen(true)} />}
                 </>
               )}
+
+              {view === 'calendar' && <CalendarView items={items} onCardClick={setSelectedId} onNewContent={() => setIsNewContentModalOpen(true)} />}
 
               {/* Ideas Vault */}
               {view === 'ideas-vault' && (
@@ -153,9 +160,11 @@ export default function App() {
                    <ListView items={items.filter(i => i.status === 'Scripting' || i.status === 'Review')} onCardClick={setSelectedId} />
                 </div>
               )}
-              {view === 'thumbnails' && <div className="p-12 text-center text-ash/40 italic">Thumbnail Bank (Coming Phase 5)</div>}
-              {view === 'performance' && <div className="p-12 text-center text-ash/40 italic">Performance Section (Coming Phase 5)</div>}
-              {view === 'settings' && <div className="p-12 text-center text-ash/40 italic">Settings Section (Coming Phase 5)</div>}
+
+              {view === 'campaigns' && <CampaignsView campaigns={campaigns} items={items} />}
+              {view === 'thumbnails' && <ThumbnailBankView thumbnails={thumbnails} items={items} />}
+              {view === 'performance' && <PerformanceView items={items} />}
+              {view === 'settings' && <SettingsView />}
             </motion.div>
           </AnimatePresence>
         </section>
@@ -174,6 +183,11 @@ export default function App() {
       <QuickIdeaModal 
         isOpen={isQuickIdeaModalOpen} 
         onClose={() => setIsQuickIdeaModalOpen(false)} 
+      />
+
+      <BottomNav 
+        currentView={view}
+        setView={setView}
       />
     </div>
   );

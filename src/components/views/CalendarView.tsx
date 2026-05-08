@@ -10,12 +10,13 @@ import { cn } from '../common/Badge';
 interface CalendarViewProps {
   items: ContentItem[];
   onCardClick: (id: string) => void;
+  onNewContent: () => void;
 }
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export const CalendarView: React.FC<CalendarViewProps> = ({ items, onCardClick }) => {
+export const CalendarView: React.FC<CalendarViewProps> = ({ items, onCardClick, onNewContent }) => {
   const [currentDate, setCurrentDate] = React.useState(new Date());
   
   const month = currentDate.getMonth();
@@ -66,6 +67,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ items, onCardClick }
           </div>
           
           <button 
+            onClick={onNewContent}
             className="bg-dark text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-cyan transition-all shadow-lg shadow-dark/5"
           >
             <Plus size={18} />
@@ -139,7 +141,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ items, onCardClick }
                     </div>
 
                     {isCurrentMonth && dayItems.length === 0 && (
-                      <button className="mt-auto opacity-0 group-hover:opacity-100 flex items-center gap-2 text-[10px] font-bold text-cyan/60 hover:text-cyan transition-all">
+                      <button 
+                        onClick={onNewContent}
+                        className="mt-auto opacity-0 group-hover:opacity-100 flex items-center gap-2 text-[10px] font-bold text-cyan/60 hover:text-cyan transition-all"
+                      >
                          <Plus size={12} />
                          <span>Add</span>
                       </button>

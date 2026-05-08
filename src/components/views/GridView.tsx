@@ -44,21 +44,37 @@ export const GridView: React.FC<GridViewProps> = ({ items, onCardClick }) => {
 
           {/* Footer Metadata */}
           <div className="mt-auto pt-6 border-t border-mist/40 space-y-4">
-             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-ash/40">
-                   <Globe size={12} />
-                   <span className="text-[10px] font-bold uppercase tracking-widest">{item.platform || 'Multi'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-ash/40">
-                   <Calendar size={12} />
-                   <span className="text-[10px] font-mono">{item.publish_date ? new Date(item.publish_date).toLocaleDateString() : 'Set Date'}</span>
-                </div>
-             </div>
+             {item.status === 'Raw Idea' ? (
+               <button 
+                 onClick={(e) => {
+                   e.stopPropagation();
+                   // In a real app, we'd call updateItem here. 
+                   // For now, clicking the card opens the detail panel where they can change status.
+                   onCardClick(item.id);
+                 }}
+                 className="w-full py-3 bg-dark text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-cyan transition-all"
+               >
+                 Promote to Strategy
+               </button>
+             ) : (
+               <>
+                 <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-ash/40">
+                       <Globe size={12} />
+                       <span className="text-[10px] font-bold uppercase tracking-widest">{item.platform || 'Multi'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-ash/40">
+                       <Calendar size={12} />
+                       <span className="text-[10px] font-mono">{item.publish_date ? new Date(item.publish_date).toLocaleDateString() : 'Set Date'}</span>
+                    </div>
+                 </div>
 
-             <div className="flex items-center gap-2">
-                <Tag size={12} className="text-cyan/40" />
-                <span className="text-[10px] font-bold text-cyan uppercase tracking-[0.2em]">{item.content_cluster || 'General'}</span>
-             </div>
+                 <div className="flex items-center gap-2">
+                    <Tag size={12} className="text-cyan/40" />
+                    <span className="text-[10px] font-bold text-cyan uppercase tracking-[0.2em]">{item.content_cluster || 'General'}</span>
+                 </div>
+               </>
+             )}
           </div>
         </motion.div>
       ))}

@@ -3,8 +3,6 @@ import {
   Search, 
   Plus, 
   Lightbulb, 
-  Filter, 
-  ArrowUpDown,
   LayoutGrid,
   Layout,
   List,
@@ -31,9 +29,9 @@ export const Topbar: React.FC<TopbarProps> = ({
   const isContentBank = currentView === 'content-bank';
 
   return (
-    <header className="h-[80px] bg-white border-b border-mist px-12 flex items-center justify-between sticky top-0 z-10">
-      {/* Left: Global Search */}
-      <div className="flex-1 max-w-md relative group">
+    <header className="h-[80px] bg-white border-b border-mist px-6 lg:px-12 flex items-center justify-between sticky top-0 z-10">
+      {/* Left: Global Search (Hidden on Mobile) */}
+      <div className="hidden lg:flex flex-1 max-w-md relative group">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ash/40 group-focus-within:text-cyan transition-colors" size={18} />
         <input 
           type="text" 
@@ -44,9 +42,15 @@ export const Topbar: React.FC<TopbarProps> = ({
         />
       </div>
 
-      {/* Center: View Switcher (Visible in Content Bank) */}
+      {/* Brand Logo for Mobile */}
+      <div className="lg:hidden flex items-center gap-2">
+         <div className="w-8 h-8 bg-dark rounded-lg flex items-center justify-center text-white font-black text-[10px]">B</div>
+         <span className="text-[11px] font-black uppercase tracking-widest text-dark">BBMh</span>
+      </div>
+
+      {/* Center: View Switcher (Visible in Content Bank, Hidden on Mobile) */}
       {isContentBank && (
-        <div className="flex bg-light-grey p-1 rounded-xl mx-8">
+        <div className="hidden lg:flex bg-light-grey p-1 rounded-xl mx-8">
           <ViewButton 
             icon={LayoutGrid} 
             active={filter.subView === 'grid'} 
@@ -71,32 +75,23 @@ export const Topbar: React.FC<TopbarProps> = ({
       )}
 
       {/* Right: Global Actions */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 lg:gap-4">
         <button 
           onClick={onQuickIdea}
-          className="flex items-center gap-3 px-6 py-3 text-ash hover:text-dark transition-all group"
+          className="flex items-center gap-3 px-3 lg:px-6 py-3 text-ash hover:text-dark transition-all group"
         >
           <Lightbulb size={18} className="text-ash/40 group-hover:text-yellow-500 group-hover:scale-110 transition-all" />
-          <span className="text-[11px] font-bold uppercase tracking-widest">Quick Idea</span>
+          <span className="hidden lg:inline text-[11px] font-bold uppercase tracking-widest">Quick Idea</span>
         </button>
 
-        <div className="h-6 w-px bg-mist mx-2" />
-
-        <div className="flex items-center gap-2">
-           <button className="p-3 text-ash/60 hover:text-dark hover:bg-light-grey rounded-lg transition-all">
-             <Filter size={18} />
-           </button>
-           <button className="p-3 text-ash/60 hover:text-dark hover:bg-light-grey rounded-lg transition-all">
-             <ArrowUpDown size={18} />
-           </button>
-        </div>
+        <div className="hidden lg:block h-6 w-px bg-mist mx-2" />
 
         <button 
           onClick={onNewContent}
-          className="bg-dark text-white px-8 py-3 rounded-xl flex items-center gap-3 hover:bg-cyan transition-all active:scale-95 shadow-lg shadow-dark/10"
+          className="bg-dark text-white px-5 lg:px-8 py-3 rounded-xl flex items-center gap-3 hover:bg-cyan transition-all active:scale-95 shadow-lg shadow-dark/10"
         >
           <Plus size={18} />
-          <span className="text-[11px] font-bold uppercase tracking-[0.2em]">New Content</span>
+          <span className="text-[10px] lg:text-[11px] font-bold uppercase tracking-[0.2em]">New</span>
         </button>
       </div>
     </header>

@@ -72,6 +72,8 @@ export interface ContentItem {
   visual_direction: string | null;
   reference_links: string[];
   asset_links: string[];
+  reference_url: string | null;
+  asset_link: string | null;
   
   // Publishing & Performance
   published_url: string | null;

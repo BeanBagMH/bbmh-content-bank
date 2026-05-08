@@ -53,10 +53,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ items, setView }) 
         </div>
       </div>
 
-      <div className="grid grid-cols-4 grid-rows-2 gap-8 h-[600px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 min-h-screen lg:h-[600px]">
         {/* Main Stats Card */}
         <DashboardCard 
-          className="col-span-2 row-span-1 bg-dark text-white p-10 flex flex-col justify-between"
+          className="col-span-1 md:col-span-2 row-span-1 bg-dark text-white p-8 lg:p-10 flex flex-col justify-between"
           icon={TrendingUp}
           title="Total Content Velocity"
         >
@@ -73,7 +73,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ items, setView }) 
 
         {/* Stuck Content Card */}
         <DashboardCard 
-          className="col-span-1 row-span-1 bg-white border border-mist p-10"
+          className="col-span-1 row-span-1 bg-white border border-mist p-8 lg:p-10"
           icon={AlertCircle}
           title="Stuck Items"
           iconColor="text-red-500"
@@ -93,7 +93,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ items, setView }) 
 
         {/* Weekly Schedule */}
         <DashboardCard 
-          className="col-span-1 row-span-2 bg-white border border-mist p-10 flex flex-col"
+          className="col-span-1 md:row-span-2 bg-white border border-mist p-8 lg:p-10 flex flex-col"
           icon={Clock}
           title="Scheduled This Week"
         >
@@ -122,7 +122,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ items, setView }) 
 
         {/* Content Type Distribution */}
         <DashboardCard 
-          className="col-span-1 row-span-1 bg-white border border-mist p-10"
+          className="col-span-1 row-span-1 bg-white border border-mist p-8 lg:p-10"
           icon={PieChart}
           title="Format Mix"
         >
@@ -147,7 +147,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ items, setView }) 
 
         {/* Ready to Post */}
         <DashboardCard 
-          className="col-span-1 row-span-1 bg-turquoise/10 border border-turquoise/20 p-10"
+          className="col-span-1 row-span-1 bg-turquoise/10 border border-turquoise/20 p-8 lg:p-10"
           icon={CheckCircle2}
           title="Ready to Deploy"
           iconColor="text-cyan"

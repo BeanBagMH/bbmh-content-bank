@@ -23,7 +23,9 @@ export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClos
     script: '',
     caption: '',
     thumbnail_idea: '',
-    notes: ''
+    notes: '',
+    reference_url: '',
+    asset_link: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,7 +33,12 @@ export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClos
     if (!formData.title) return;
     
     try {
-      await addItem(formData);
+      const { reference_url, asset_link, ...rest } = formData;
+      await addItem({ 
+        ...rest, 
+        reference_links: reference_url ? [reference_url] : [],
+        asset_links: asset_link ? [asset_link] : []
+      });
       onClose();
       setFormData({
         title: '',
@@ -45,7 +52,9 @@ export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClos
         script: '',
         caption: '',
         thumbnail_idea: '',
-        notes: ''
+        notes: '',
+        reference_url: '',
+        asset_link: ''
       });
     } catch (e) {
       console.error(e);
@@ -137,11 +146,38 @@ export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClos
                      />
                      <div className="space-y-2">
                         <label className="text-[10px] font-black text-ash uppercase tracking-widest">Publish Date</label>
+                        <div className="relative group">
+                          <input 
+                            type="date" 
+                            id="date-picker-main"
+                            value={formData.publish_date}
+                            onChange={(e) => setFormData({ ...formData, publish_date: e.target.value })}
+                            className="w-full bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-bold outline-none focus:border-cyan focus:bg-white transition-all cursor-pointer [color-scheme:light] relative z-10"
+                          />
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Links Section */}
+                  <div className="grid grid-cols-2 gap-8 pt-8 border-t border-mist/30">
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black text-ash uppercase tracking-widest">Reference URL</label>
                         <input 
-                          type="date" 
-                          value={formData.publish_date}
-                          onChange={(e) => setFormData({ ...formData, publish_date: e.target.value })}
-                          className="w-full bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-bold outline-none focus:border-cyan transition-all"
+                          type="url" 
+                          value={formData.reference_url}
+                          onChange={(e) => setFormData({ ...formData, reference_url: e.target.value })}
+                          placeholder="https://inspiration.com/..."
+                          className="w-full bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-bold outline-none focus:border-cyan focus:bg-white transition-all"
+                        />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black text-ash uppercase tracking-widest">Asset Link (Framer/Canva)</label>
+                        <input 
+                          type="url" 
+                          value={formData.asset_link}
+                          onChange={(e) => setFormData({ ...formData, asset_link: e.target.value })}
+                          placeholder="https://framer.com/projects/..."
+                          className="w-full bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-bold outline-none focus:border-cyan focus:bg-white transition-all"
                         />
                      </div>
                   </div>
