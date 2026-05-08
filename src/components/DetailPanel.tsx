@@ -1,247 +1,270 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Trash2, Edit3, Save, X } from 'lucide-react';
-import type { ContentItem, ContentStatus, ContentColumn } from '../types';
-import { SCRIPTS } from '../data/mockData';
-import { Badge } from './common/Badge';
+import { 
+  X, 
+  Copy, 
+  Archive, 
+  Trash2, 
+  ExternalLink,
+  ChevronRight,
+  Info,
+  PenTool,
+  Palette,
+  Share2,
+  BarChart3,
+  CheckCircle2
+} from 'lucide-react';
+import { useContentStore } from '../hooks/useContentStore';
+import { cn } from './common/Badge';
+import type { ContentItem, ContentStatus, ContentType, Priority, Platform, ContentCluster } from '../types';
 
 interface DetailPanelProps {
-  selectedId: number | null;
-  items: ContentItem[];
+  selectedId: string | null;
   onClose: () => void;
-  onDelete: (id: number) => void;
-  onUpdate: (id: number, updates: Partial<ContentItem>) => void;
 }
 
-export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, items, onClose, onDelete, onUpdate }) => {
-  const item = items.find(d => d.id === selectedId);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState<Partial<ContentItem>>({});
+const TABS = [
+  { id: 'info', label: 'Basics', icon: Info },
+  { id: 'writing', label: 'Writing', icon: PenTool },
+  { id: 'creative', label: 'Creative', icon: Palette },
+  { id: 'publishing', label: 'Publishing', icon: Share2 },
+  { id: 'performance', label: 'Performance', icon: BarChart3 },
+];
 
-  useEffect(() => {
-    if (item) {
-      setEditData(item);
-      setIsEditing(false);
+export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose }) => {
+  const { items, updateItem, deleteItem, duplicateItem } = useContentStore();
+  const [activeTab, setActiveTab] = React.useState('info');
+  const [isSaving, setIsSaving] = React.useState(false);
+  
+  const item = items.find(i => i.id === selectedId);
+
+  // Auto-save logic
+  const handleUpdate = async (updates: Partial<ContentItem>) => {
+    if (!selectedId) return;
+    setIsSaving(true);
+    try {
+      await updateItem(selectedId, updates);
+      setTimeout(() => setIsSaving(false), 800);
+    } catch (e) {
+      console.error(e);
+      setIsSaving(false);
     }
-  }, [item]);
-
-  if (!item) return null;
-
-  const handleSave = () => {
-    onUpdate(item.id, editData);
-    setIsEditing(false);
   };
+
+  const handleDelete = async () => {
+    if (!selectedId) return;
+    if (confirm('Permanently delete this strategy?')) {
+      await deleteItem(selectedId);
+      onClose();
+    }
+  };
+
+  const handleDuplicate = async () => {
+    if (!item) return;
+    await duplicateItem(item);
+    onClose();
+  };
+
+  if (!selectedId) return null;
 
   return (
     <AnimatePresence>
       {selectedId && (
-        <>
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-[#fcfaf9]/90 backdrop-blur-sm z-[200]"
-          />
-          <motion.div 
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 40, stiffness: 400 }}
-            className="fixed top-0 right-0 h-screen w-[700px] bg-[#fcfaf9] z-[201] shadow-[-20px_0_60px_rgba(0,0,0,0.02)] flex flex-col border-l border-mist"
-          >
-            {/* Header */}
-            <div className="px-16 py-12 border-b border-mist flex items-center justify-between sticky top-0 bg-[#fcfaf9] z-10">
-              <div className="flex items-center gap-10">
-                <button 
-                  onClick={onClose}
-                  className="text-ash/40 hover:text-magenta transition-all active:scale-90"
-                >
-                  <ArrowLeft size={24} />
-                </button>
-                <div className="space-y-1">
-                  <div className="text-[9px] font-bold uppercase tracking-[0.3em] text-ash/60">
-                    Piece <span className="text-magenta">N°{item.id.toString().padStart(4, '0')}</span>
-                  </div>
-                  <div className="text-ash/30 text-[10px] font-mono uppercase tracking-tighter">Cluster Protocol Active</div>
-                </div>
-              </div>
-              <div className="flex gap-6">
-                {isEditing ? (
-                  <>
-                    <button 
-                      onClick={handleSave}
-                      className="text-[10px] font-bold text-magenta uppercase tracking-widest flex items-center gap-2 hover:opacity-70 transition-all"
-                    >
-                      <Save size={14} /> Commit Changes
-                    </button>
-                    <button 
-                      onClick={() => setIsEditing(false)}
-                      className="text-ash/40 hover:text-graphite transition-all"
-                    >
-                      <X size={20} />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button 
-                      onClick={() => setIsEditing(true)}
-                      className="text-ash/40 hover:text-magenta transition-all"
-                    >
-                      <Edit3 size={20} />
-                    </button>
-                    <button 
-                      onClick={() => { if(confirm('Permanently discard this strategy?')) { onDelete(item.id); onClose(); } }}
-                      className="text-ash/40 hover:text-magenta transition-all"
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  </>
-                )}
-              </div>
+        <motion.aside
+          initial={{ x: '100%' }}
+          animate={{ x: 0 }}
+          exit={{ x: '100%' }}
+          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          className="fixed right-0 top-0 h-full w-[600px] bg-white border-l border-mist shadow-2xl z-30 flex flex-col"
+        >
+          {/* Header */}
+          <div className="p-8 border-b border-mist flex items-center justify-between bg-light-grey/20">
+            <div className="flex items-center gap-4">
+               <button onClick={onClose} className="p-2 hover:bg-mist rounded-lg transition-all text-ash">
+                 <X size={20} />
+               </button>
+               <div className="h-6 w-px bg-mist" />
+               <div className="flex items-center gap-3">
+                  <span className="text-[10px] font-mono text-ash/40">#{selectedId.slice(0, 8)}</span>
+                  {isSaving ? (
+                    <div className="flex items-center gap-2 text-cyan">
+                       <div className="w-1.5 h-1.5 bg-cyan rounded-full animate-pulse" />
+                       <span className="text-[10px] font-bold uppercase tracking-widest">Saving...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-ash/40">
+                       <CheckCircle2 size={12} />
+                       <span className="text-[10px] font-bold uppercase tracking-widest">Saved</span>
+                    </div>
+                  )}
+               </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto px-20 py-24 custom-scrollbar space-y-24 pb-48">
-              {/* Title Section */}
-              <div className="space-y-8">
-                {isEditing ? (
-                  <textarea 
-                    className="w-full bg-transparent border-b-2 border-mist text-4xl font-display italic text-graphite focus:border-magenta outline-none transition-all leading-tight py-4"
-                    value={editData.title || ''}
-                    onChange={e => setEditData({ ...editData, title: e.target.value })}
-                  />
-                ) : (
-                  <h1 className="text-6xl font-display text-graphite leading-[1.05] italic tracking-tight">
-                    {item.title}
-                  </h1>
-                )}
-              </div>
-              
-              {/* Meta Table */}
-              <div className="grid grid-cols-2 gap-x-20 gap-y-16 py-12 border-t border-b border-mist">
-                <EditableField 
-                  label="Strategic Cluster" 
-                  value={item.cluster + ' · ' + item.cname} 
-                  isEditing={isEditing}
-                  editNode={
-                    <select 
-                      className="w-full bg-transparent border-b border-mist py-2 text-sm font-medium text-graphite outline-none focus:border-magenta"
-                      value={editData.cluster}
-                      onChange={e => setEditData({ ...editData, cluster: e.target.value })}
-                    >
-                      <option value="01">01 · Invisibility</option>
-                      <option value="02">02 · Trust Filter</option>
-                      <option value="03">03 · Scale Problem</option>
-                      <option value="04">04 · Second Gen</option>
-                      <option value="05">05 · Inconsistency</option>
-                      <option value="06">06 · Price War</option>
-                      <option value="07">07 · Export Filter</option>
-                      <option value="08">08 · Dead Website</option>
-                      <option value="09">09 · Referral Gap</option>
-                      <option value="10">10 · Revenue Link</option>
-                    </select>
-                  }
-                />
-                <EditableField 
-                  label="Content Column" 
-                  value={item.col} 
-                  isEditing={isEditing}
-                  badge
-                  editNode={
-                    <select 
-                      className="w-full bg-transparent border-b border-mist py-2 text-sm font-medium text-graphite outline-none focus:border-magenta"
-                      value={editData.col}
-                      onChange={e => setEditData({ ...editData, col: e.target.value as ContentColumn })}
-                    >
-                      <option value="video">Video Library</option>
-                      <option value="blog">Written Strategy</option>
-                      <option value="social">Micro-Content</option>
-                    </select>
-                  }
-                />
-                <EditableField 
-                  label="Workflow Status" 
-                  value={item.status} 
-                  isEditing={isEditing}
-                  badge
-                  editNode={
-                    <select 
-                      className="w-full bg-transparent border-b border-mist py-2 text-sm font-medium text-graphite outline-none focus:border-magenta"
-                      value={editData.status}
-                      onChange={e => setEditData({ ...editData, status: e.target.value as ContentStatus })}
-                    >
-                      <option value="Draft">Draft</option>
-                      <option value="Script Ready">Script Ready</option>
-                    </select>
-                  }
-                />
-                <EditableField 
-                  label="Deployment Roadmap" 
-                  value={item.day ? `${item.day} May, ${item.year}` : "Unscheduled"} 
-                  isEditing={isEditing}
-                  editNode={
-                    <div className="flex gap-4">
-                       <input 
-                         type="number" 
-                         className="w-16 bg-transparent border-b border-mist py-2 text-sm font-medium text-graphite outline-none focus:border-magenta"
-                         value={editData.day}
-                         onChange={e => setEditData({ ...editData, day: parseInt(e.target.value) })}
-                       />
-                       <input 
-                         type="number" 
-                         className="w-24 bg-transparent border-b border-mist py-2 text-sm font-medium text-graphite outline-none focus:border-magenta"
-                         value={editData.year}
-                         onChange={e => setEditData({ ...editData, year: parseInt(e.target.value) })}
-                       />
-                    </div>
-                  }
-                />
-              </div>
-
-              {/* Script Content */}
-              <div className="space-y-24">
-                {item.hasScript && SCRIPTS[item.id] ? (
-                  <div className="space-y-32">
-                    <ScriptSection label="The Hook" timing="00:03" text={SCRIPTS[item.id].hook} />
-                    <ScriptSection label="The Insight" timing="00:35" text={SCRIPTS[item.id].insight} />
-                    <ScriptSection label="Resolution" timing="00:58" text={SCRIPTS[item.id].newworld} />
-                    
-                    <div className="pt-24 border-t border-mist/50">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-magenta mb-8 italic">Director's Protocol</div>
-                      <div className="text-3xl font-display text-graphite italic leading-relaxed opacity-70">
-                        "Refer to protocol for delivery guidance."
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="py-24 text-center border-2 border-dashed border-mist rounded-sm">
-                    <p className="text-ash/40 font-display italic text-2xl">Strategy awaiting editorial refinement.</p>
-                  </div>
-                )}
-              </div>
+            <div className="flex items-center gap-2">
+               <ActionButton onClick={handleDuplicate} icon={Copy} title="Duplicate" />
+               <ActionButton onClick={() => handleUpdate({ status: 'Archived' })} icon={Archive} title="Archive" />
+               <ActionButton onClick={handleDelete} icon={Trash2} title="Delete" className="hover:text-red-500 hover:bg-red-50" />
             </div>
-          </motion.div>
-        </>
+          </div>
+
+          {/* Item Title Section */}
+          <div className="p-10 pb-0">
+             <textarea 
+               value={item?.title || ''}
+               onChange={(e) => handleUpdate({ title: e.target.value })}
+               placeholder="Piece Title..."
+               className="w-full text-4xl font-display font-bold text-dark border-none outline-none bg-transparent resize-none leading-tight placeholder:text-ash/20"
+               rows={2}
+             />
+          </div>
+
+          {/* Tabs */}
+          <div className="flex px-10 border-b border-mist mt-6">
+             {TABS.map(tab => (
+               <button
+                 key={tab.id}
+                 onClick={() => setActiveTab(tab.id)}
+                 className={cn(
+                   "flex items-center gap-3 py-4 px-6 border-b-2 transition-all group",
+                   activeTab === tab.id 
+                    ? "border-dark text-dark" 
+                    : "border-transparent text-ash/40 hover:text-ash hover:border-mist"
+                 )}
+               >
+                 <tab.icon size={16} className={cn("transition-transform group-hover:scale-110", activeTab === tab.id ? "text-cyan" : "")} />
+                 <span className="text-[11px] font-bold uppercase tracking-widest">{tab.label}</span>
+               </button>
+             ))}
+          </div>
+
+          {/* Content Area */}
+          <div className="flex-1 overflow-y-auto p-10 space-y-12 custom-scrollbar">
+             {activeTab === 'info' && (
+               <div className="grid grid-cols-2 gap-10">
+                  <PropertyField label="Status" value={item?.status} onChange={(v) => handleUpdate({ status: v as ContentStatus })} options={['Raw Idea', 'Selected', 'Research', 'Scripting', 'Design', 'Editing', 'Review', 'Scheduled', 'Published']} />
+                  <PropertyField label="Type" value={item?.content_type} onChange={(v) => handleUpdate({ content_type: v as ContentType })} options={['Reel', 'Carousel', 'LinkedIn Post', 'Blog', 'YouTube Short', 'Instagram Post', 'Twitter/X Post', 'Case Study', 'Email', 'Ad Creative', 'Script']} />
+                  <PropertyField label="Platform" value={item?.platform} onChange={(v) => handleUpdate({ platform: v as Platform })} options={['Instagram', 'LinkedIn', 'YouTube', 'Website Blog', 'Twitter/X', 'Email', 'Multi-platform']} />
+                  <PropertyField label="Cluster" value={item?.content_cluster} onChange={(v) => handleUpdate({ content_cluster: v as ContentCluster })} options={['Brand Invisibility', 'Trust Building', 'Price War', 'Website Strategy', 'Branding', 'Design Education', 'AI Workflow', 'Client Case Study', 'Behind The Scenes', 'Founder Story', 'Sales / Outreach', 'General']} />
+                  <PropertyField label="Priority" value={item?.priority} onChange={(v) => handleUpdate({ priority: v as Priority })} options={['Low', 'Medium', 'High', 'Urgent']} />
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-ash uppercase tracking-widest">Publish Date</label>
+                    <input 
+                      type="date" 
+                      value={item?.publish_date || ''}
+                      onChange={(e) => handleUpdate({ publish_date: e.target.value })}
+                      className="w-full bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-bold outline-none focus:border-cyan transition-all"
+                    />
+                  </div>
+               </div>
+             )}
+
+             {activeTab === 'writing' && (
+               <div className="space-y-10">
+                  <EditorSection label="Hook / Headline" value={item?.hook} onChange={(v: string) => handleUpdate({ hook: v })} placeholder="The opening signal..." />
+                  <EditorSection label="Script / Body" value={item?.script} onChange={(v: string) => handleUpdate({ script: v })} placeholder="The core message..." minHeight="300px" />
+                  <EditorSection label="Caption" value={item?.caption} onChange={(v: string) => handleUpdate({ caption: v })} placeholder="For the platforms..." />
+                  <EditorSection label="Call to Action" value={item?.cta} onChange={(v: string) => handleUpdate({ cta: v })} placeholder="The strategic move..." />
+               </div>
+             )}
+
+             {activeTab === 'creative' && (
+               <div className="space-y-10">
+                  <EditorSection label="Thumbnail Idea" value={item?.thumbnail_idea} onChange={(v: string) => handleUpdate({ thumbnail_idea: v })} placeholder="Visual concept..." />
+                  <EditorSection label="Visual Direction" value={item?.visual_direction} onChange={(v: string) => handleUpdate({ visual_direction: v })} placeholder="Aesthetic notes..." />
+                  <EditorSection label="Asset Links" value={item?.asset_links?.join('\n')} onChange={(v: string) => handleUpdate({ asset_links: v.split('\n').filter((l: string) => l.trim()) })} placeholder="Figma, Drive, etc (one per line)..." />
+               </div>
+             )}
+
+             {activeTab === 'publishing' && (
+               <div className="space-y-10">
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black text-ash uppercase tracking-widest">Published URL</label>
+                    <div className="flex gap-4">
+                      <input 
+                        type="url" 
+                        value={item?.published_url || ''}
+                        onChange={(e) => handleUpdate({ published_url: e.target.value })}
+                        placeholder="https://..."
+                        className="flex-1 bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-medium outline-none focus:border-cyan transition-all"
+                      />
+                      {item?.published_url && (
+                        <a href={item.published_url} target="_blank" rel="noopener noreferrer" className="p-4 bg-dark text-white rounded-xl hover:bg-cyan transition-all">
+                           <ExternalLink size={18} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+               </div>
+             )}
+
+             {activeTab === 'performance' && (
+               <div className="space-y-10">
+                  <div className="grid grid-cols-3 gap-6">
+                     <PerformanceInput label="Views" value={item?.performance_stats?.views} onChange={(v: string) => handleUpdate({ performance_stats: { ...item?.performance_stats, views: parseInt(v) || 0 } })} />
+                     <PerformanceInput label="Likes" value={item?.performance_stats?.likes} onChange={(v: string) => handleUpdate({ performance_stats: { ...item?.performance_stats, likes: parseInt(v) || 0 } })} />
+                     <PerformanceInput label="Comments" value={item?.performance_stats?.comments} onChange={(v: string) => handleUpdate({ performance_stats: { ...item?.performance_stats, comments: parseInt(v) || 0 } })} />
+                     <PerformanceInput label="Shares" value={item?.performance_stats?.shares} onChange={(v: string) => handleUpdate({ performance_stats: { ...item?.performance_stats, shares: parseInt(v) || 0 } })} />
+                     <PerformanceInput label="Saves" value={item?.performance_stats?.saves} onChange={(v: string) => handleUpdate({ performance_stats: { ...item?.performance_stats, saves: parseInt(v) || 0 } })} />
+                     <PerformanceInput label="Leads" value={item?.performance_stats?.leads} onChange={(v: string) => handleUpdate({ performance_stats: { ...item?.performance_stats, leads: parseInt(v) || 0 } })} />
+                  </div>
+               </div>
+             )}
+          </div>
+        </motion.aside>
       )}
     </AnimatePresence>
   );
 };
 
-const EditableField = ({ label, value, isEditing, badge, editNode }: { label: string, value: string, isEditing: boolean, badge?: boolean, editNode: React.ReactNode }) => (
-  <div className="space-y-3">
-    <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-ash/40">{label}</div>
-    {isEditing ? editNode : (
-      badge ? <Badge variant={value}>{value}</Badge> : <div className="text-[15px] font-medium text-graphite">{value}</div>
-    )}
+const ActionButton = ({ onClick, icon: Icon, title, className }: any) => (
+  <button 
+    onClick={onClick}
+    className={cn("p-2.5 hover:bg-mist rounded-lg transition-all text-ash/60 group", className)}
+    title={title}
+  >
+    <Icon size={18} className="group-hover:scale-110 transition-transform" />
+  </button>
+);
+
+const PropertyField = ({ label, value, onChange, options }: { label: string, value: any, onChange: (v: string) => void, options: string[] }) => (
+  <div className="space-y-2">
+    <label className="text-[10px] font-black text-ash uppercase tracking-widest">{label}</label>
+    <div className="relative group/select">
+      <select 
+        value={value || ''} 
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-bold outline-none focus:border-cyan appearance-none transition-all cursor-pointer"
+      >
+        <option value="">Select {label}</option>
+        {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+      </select>
+      <ChevronRight size={14} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-ash/30 group-hover/select:text-dark transition-all" />
+    </div>
   </div>
 );
 
-const ScriptSection = ({ label, timing, text }: { label: string, timing: string, text: string }) => (
-  <div className="space-y-8 relative">
-    <div className="flex items-baseline justify-between border-b border-mist/30 pb-4 mb-4">
-      <div className="text-[11px] font-bold uppercase tracking-[0.3em] text-graphite">{label}</div>
-      <div className="text-[10px] font-mono text-ash/40">{timing}</div>
-    </div>
-    <p className="text-2xl font-display text-charcoal leading-[1.6] italic">{text}</p>
+const EditorSection = ({ label, value, onChange, placeholder, minHeight = "100px" }: any) => (
+  <div className="space-y-4">
+    <label className="text-[10px] font-black text-ash uppercase tracking-widest">{label}</label>
+    <textarea 
+      value={value || ''}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      style={{ minHeight }}
+      className="w-full bg-light-grey/30 border-l-2 border-mist/40 p-6 text-[15px] font-medium leading-relaxed outline-none focus:border-cyan focus:bg-white transition-all resize-none placeholder:text-ash/20"
+    />
+  </div>
+);
+
+const PerformanceInput = ({ label, value, onChange }: any) => (
+  <div className="space-y-2">
+    <label className="text-[10px] font-black text-ash uppercase tracking-widest">{label}</label>
+    <input 
+      type="number" 
+      value={value || ''}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder="0"
+      className="w-full bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-mono font-bold outline-none focus:border-cyan transition-all"
+    />
   </div>
 );

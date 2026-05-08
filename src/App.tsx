@@ -1,105 +1,161 @@
-import { useState, useMemo } from 'react';
+import * as React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useContentStore } from './hooks/useContentStore';
 import { Sidebar } from './components/layout/Sidebar';
 import { Topbar } from './components/layout/Topbar';
+import { DashboardView } from './components/views/DashboardView';
 import { BoardView } from './components/views/BoardView';
 import { ListView } from './components/views/ListView';
 import { CalendarView } from './components/views/CalendarView';
+import { GridView } from './components/views/GridView';
 import { DetailPanel } from './components/DetailPanel';
-import { NewIdeaModal } from './components/modals/NewIdeaModal';
-
-const CLUSTERS = [
-  { id: '01', name: 'Invisibility' },
-  { id: '02', name: 'Trust Filter' },
-  { id: '03', name: 'Scale Problem' },
-  { id: '04', name: 'Second Gen' },
-  { id: '05', name: 'Inconsistency' },
-  { id: '06', name: 'Price War' },
-  { id: '07', name: 'Export Filter' },
-  { id: '08', name: 'Dead Website' },
-  { id: '09', name: 'Referral Gap' },
-  { id: '10', name: 'Revenue Link' }
-];
+import { NewContentModal } from './components/modals/NewContentModal';
+import { QuickIdeaModal } from './components/modals/QuickIdeaModal';
+import { LoginPage } from './components/auth/LoginPage';
+import { supabase, isConfigured } from './lib/supabase';
 
 export default function App() {
-  const { items, addItem, updateItem, deleteItem, initialized } = useContentStore();
-  
-  const [view, setView] = useState<'board' | 'list' | 'calendar'>('board');
-  const [calView, setCalView] = useState<'month' | 'week'>('month');
-  const [filter, setFilter] = useState({ col: "", cluster: "", tab: "all", search: "" });
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [isNewModalOpen, setIsNewModalOpen] = useState(false);
-  
-  const [calMonth, setCalMonth] = useState(new Date().getMonth());
-  const [calYear, setCalYear] = useState(new Date().getFullYear());
+  const { 
+    items, 
+    ideas, 
+    campaigns, 
+    thumbnails, 
+    initialized,
+    loading 
+  } = useContentStore();
 
-  const filteredData = useMemo(() => {
-    return items.filter(d => {
-      if (filter.col && d.col !== filter.col) return false;
-      if (filter.cluster && d.cluster !== filter.cluster) return false;
-      if (filter.tab === "ready" && d.status !== "Script Ready") return false;
-      if (filter.tab === "draft" && d.status !== "Draft") return false;
-      if (filter.search) {
-        const q = filter.search.toLowerCase();
-        if (!d.title.toLowerCase().includes(q) && !d.cname.toLowerCase().includes(q) && !d.cluster.toLowerCase().includes(q)) return false;
-      }
-      return true;
+  const [view, setView] = React.useState<string>('dashboard');
+  const [filter, setFilter] = React.useState({ 
+    search: '', 
+    subView: 'grid', // grid, board, list, calendar (within Content Bank)
+    status: '',
+    platform: '',
+    type: '',
+    cluster: '',
+    priority: ''
+  });
+  
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [isNewContentModalOpen, setIsNewContentModalOpen] = React.useState(false);
+  const [isQuickIdeaModalOpen, setIsQuickIdeaModalOpen] = React.useState(false);
+  const [session, setSession] = React.useState<any>(null);
+  const [authLoading, setAuthLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!isConfigured) {
+      setAuthLoading(false);
+      return;
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }: any) => {
+      setSession(session);
+      setAuthLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      setSession(session);
+      setAuthLoading(false);
+    });
+
+    return () => subscription?.unsubscribe();
+  }, []);
+
+  const filteredItems = React.useMemo(() => {
+    return items.filter(item => {
+      const matchesSearch = !filter.search || 
+        item.title.toLowerCase().includes(filter.search.toLowerCase()) ||
+        item.content_cluster?.toLowerCase().includes(filter.search.toLowerCase());
+      
+      const matchesStatus = !filter.status || item.status === filter.status;
+      const matchesPlatform = !filter.platform || item.platform === filter.platform;
+      const matchesType = !filter.type || item.content_type === filter.type;
+      
+      return matchesSearch && matchesStatus && matchesPlatform && matchesType;
     });
   }, [items, filter]);
 
   const itemCounts = {
-    video: items.filter(i => i.col === 'video').length,
-    blog: items.filter(i => i.col === 'blog').length,
-    social: items.filter(i => i.col === 'social').length,
+    'dashboard': items.length,
+    'content-bank': items.length,
+    'ideas-vault': ideas.length,
+    'campaigns': campaigns.length,
+    'thumbnails': thumbnails.length,
+    'performance': items.filter(i => i.status === 'Published').length,
   };
 
-  if (!initialized) return null;
+  if (!isConfigured) {
+    return <SetupRequired />;
+  }
+
+  if (authLoading) {
+    return <LoadingScreen label="Authenticating..." />;
+  }
+
+  if (!session) {
+    return <LoginPage />;
+  }
+
+  if (!initialized && loading) {
+    return <LoadingScreen label="Synchronizing Strategic Sanctuary..." />;
+  }
 
   return (
-    <div className="flex h-screen bg-[#09090b] overflow-hidden font-sans text-white selection:bg-cyan/30">
+    <div className="flex h-screen bg-[#fcfaf9] overflow-hidden font-body text-dark selection:bg-cyan/20">
       <Sidebar 
-        currentFilter={filter} 
-        setFilter={setFilter} 
         currentView={view} 
         setView={setView}
         itemCounts={itemCounts}
-        clusters={CLUSTERS}
       />
 
-      <main className="flex-1 flex flex-col min-w-0 bg-[#09090b]">
+      <main className="flex-1 flex flex-col min-w-0 bg-[#fcfaf9] relative">
         <Topbar 
-          currentFilter={filter} 
-          setFilter={setFilter} 
           currentView={view} 
           setView={setView}
-          onNewIdea={() => setIsNewModalOpen(true)}
+          onNewContent={() => setIsNewContentModalOpen(true)}
+          onQuickIdea={() => setIsQuickIdeaModalOpen(true)}
+          filter={filter}
+          setFilter={setFilter}
         />
 
-        <section className="flex-1 overflow-auto p-12 relative custom-scrollbar">
+        <section className="flex-1 overflow-auto p-12 custom-scrollbar">
           <AnimatePresence mode="wait">
             <motion.div
-              key={view}
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.02 }}
-              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              key={view + (view === 'content-bank' ? filter.subView : '')}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
               className="h-full"
             >
-              {view === 'board' && <BoardView items={filteredData} onCardClick={setSelectedId} />}
-              {view === 'list' && <ListView items={filteredData} onCardClick={setSelectedId} />}
-              {view === 'calendar' && (
-                <CalendarView 
-                  items={filteredData} 
-                  onCardClick={setSelectedId}
-                  calMonth={calMonth}
-                  setCalMonth={setCalMonth}
-                  calYear={calYear}
-                  setCalYear={setCalYear}
-                  calView={calView}
-                  setCalView={setCalView}
-                />
+              {view === 'dashboard' && <DashboardView items={items} setView={setView} />}
+              
+              {view === 'content-bank' && (
+                <>
+                  {filter.subView === 'grid' && <GridView items={filteredItems} onCardClick={setSelectedId} />}
+                  {filter.subView === 'board' && <BoardView items={filteredItems} onCardClick={setSelectedId} />}
+                  {filter.subView === 'list' && <ListView items={filteredItems} onCardClick={setSelectedId} />}
+                  {filter.subView === 'calendar' && <CalendarView items={filteredItems} onCardClick={setSelectedId} />}
+                </>
               )}
+
+              {/* Ideas Vault */}
+              {view === 'ideas-vault' && (
+                <div className="space-y-12">
+                   <h2 className="text-5xl font-display font-bold text-dark tracking-tighter">Ideas Vault</h2>
+                   <GridView items={items.filter(i => i.status === 'Raw Idea')} onCardClick={setSelectedId} />
+                </div>
+              )}
+
+              {/* Scripts Section */}
+              {view === 'scripts' && (
+                <div className="space-y-12">
+                   <h2 className="text-5xl font-display font-bold text-dark tracking-tighter">Script Sanctuary</h2>
+                   <ListView items={items.filter(i => i.status === 'Scripting' || i.status === 'Review')} onCardClick={setSelectedId} />
+                </div>
+              )}
+              {view === 'thumbnails' && <div className="p-12 text-center text-ash/40 italic">Thumbnail Bank (Coming Phase 5)</div>}
+              {view === 'performance' && <div className="p-12 text-center text-ash/40 italic">Performance Section (Coming Phase 5)</div>}
+              {view === 'settings' && <div className="p-12 text-center text-ash/40 italic">Settings Section (Coming Phase 5)</div>}
             </motion.div>
           </AnimatePresence>
         </section>
@@ -107,17 +163,42 @@ export default function App() {
 
       <DetailPanel 
         selectedId={selectedId} 
-        items={items} 
         onClose={() => setSelectedId(null)} 
-        onDelete={deleteItem}
-        onUpdate={updateItem}
       />
 
-      <NewIdeaModal 
-        isOpen={isNewModalOpen} 
-        onClose={() => setIsNewModalOpen(false)} 
-        onAdd={addItem} 
+      <NewContentModal 
+        isOpen={isNewContentModalOpen} 
+        onClose={() => setIsNewContentModalOpen(false)} 
+      />
+
+      <QuickIdeaModal 
+        isOpen={isQuickIdeaModalOpen} 
+        onClose={() => setIsQuickIdeaModalOpen(false)} 
       />
     </div>
   );
 }
+
+const LoadingScreen = ({ label }: { label: string }) => (
+  <div className="h-screen flex flex-col items-center justify-center bg-white">
+    <div className="w-12 h-12 border-4 border-mist border-t-cyan rounded-full animate-spin mb-6" />
+    <div className="animate-pulse text-ash/40 text-[10px] uppercase tracking-[0.4em] font-bold">{label}</div>
+  </div>
+);
+
+const SetupRequired = () => (
+  <div className="h-screen flex items-center justify-center bg-[#fcfaf9] p-12">
+    <div className="max-w-xl w-full space-y-12 text-center">
+      <h1 className="text-6xl font-display text-dark italic-serif leading-none">Setup Required</h1>
+      <div className="bg-white p-12 border border-mist text-left space-y-8 shadow-[0_40px_80px_rgba(0,0,0,0.03)]">
+        <p className="text-lg font-display italic-serif text-dark leading-relaxed">
+          Please add these environment variables to your .env.local:
+        </p>
+        <div className="space-y-4 font-mono text-[11px] bg-light-grey p-6 border border-mist">
+           <div className="flex justify-between items-center"><span className="text-cyan font-bold">VITE_SUPABASE_URL</span></div>
+           <div className="flex justify-between items-center"><span className="text-cyan font-bold">VITE_SUPABASE_ANON_KEY</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+);

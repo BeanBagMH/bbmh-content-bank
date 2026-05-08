@@ -5,10 +5,32 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BBMh Content Bank</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=Anton&display=swap" rel="stylesheet">
+    <style>
+      body { margin: 0; background: #fcfaf9; }
+      .initial-loader {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: serif;
+        font-style: italic;
+        color: #e61e6e;
+      }
+    </style>
+    <script>
+      console.log('BBMh: HTML script running');
+      // Simple visual confirmation
+      window.addEventListener('DOMContentLoaded', () => {
+        document.body.style.backgroundColor = '#fcfaf9';
+        console.log('BBMh: DOM Loaded');
+      });
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="initial-loader">Connecting to Strategic Sanctuary...</div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

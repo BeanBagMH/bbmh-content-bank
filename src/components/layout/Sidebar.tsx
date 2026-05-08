@@ -1,116 +1,119 @@
-import React from 'react';
+import { 
+  LayoutDashboard, 
+  Database, 
+  Lightbulb, 
+  Calendar, 
+  Flag, 
+  FileText, 
+  Image as ImageIcon, 
+  BarChart3, 
+  Settings,
+  LogOut
+} from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 import { cn } from '../common/Badge';
 
 interface SidebarProps {
-  currentFilter: { col: string; cluster: string };
-  setFilter: (f: any) => void;
   currentView: string;
-  setView: (v: any) => void;
-  itemCounts: Record<string, number>;
-  clusters: { id: string; name: string }[];
+  setView: (view: any) => void;
+  itemCounts: { [key: string]: number };
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ 
-  currentFilter, 
-  setFilter, 
-  currentView, 
-  setView,
-  itemCounts,
-  clusters
-}) => {
+const NAV_ITEMS = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'content-bank', label: 'Content Bank', icon: Database },
+  { id: 'ideas-vault', label: 'Ideas Vault', icon: Lightbulb },
+  { id: 'calendar', label: 'Calendar', icon: Calendar },
+  { id: 'campaigns', label: 'Campaigns', icon: Flag },
+  { id: 'scripts', label: 'Scripts', icon: FileText },
+  { id: 'thumbnails', label: 'Thumbnail Bank', icon: ImageIcon },
+  { id: 'performance', label: 'Performance', icon: BarChart3 },
+  { id: 'settings', label: 'Settings', icon: Settings },
+];
+
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, itemCounts }) => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
-    <aside className="w-[300px] bg-[#fcfaf9] flex flex-col shrink-0 border-r border-[#ececec] h-screen overflow-hidden">
-      <div className="p-12 pb-16">
-        <div className="space-y-1">
-          <h1 className="text-3xl text-graphite tracking-tight leading-none mb-4">BBMh</h1>
-          <div className="h-px w-12 bg-magenta mb-6" />
-          <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-ash">Editorial Sanctuary</p>
+    <aside className="w-[280px] h-full bg-white border-r border-mist flex flex-col z-20">
+      {/* Brand Header */}
+      <div className="p-10 border-b border-mist">
+        <div className="flex items-center gap-4 mb-2">
+          <div className="w-10 h-10 bg-dark rounded-md flex items-center justify-center">
+            <span className="text-white font-display text-xl font-black">B</span>
+          </div>
+          <div>
+            <h1 className="text-xl font-display font-bold tracking-tight text-dark">BBMh</h1>
+            <p className="text-[10px] font-bold text-ash uppercase tracking-[0.2em] opacity-60">Content OS V3</p>
+          </div>
         </div>
       </div>
 
-      <nav className="flex-1 px-8 overflow-y-auto custom-scrollbar space-y-8 pb-20">
-        <div className="space-y-1">
-          <div className="text-[9px] font-bold text-ash uppercase tracking-[0.2em] mb-4 opacity-50">Navigation</div>
-          <NavItem 
-            label="Library Overview" 
-            active={currentView !== "calendar" && !currentFilter.col} 
-            onClick={() => { setFilter({ ...currentFilter, col: "" }); setView("board") }} 
-          />
-          <NavItem 
-            label="Video Essays" 
-            count={itemCounts.video} 
-            active={currentFilter.col === "video"} 
-            onClick={() => { setFilter({ ...currentFilter, col: "video" }); setView("board") }} 
-          />
-          <NavItem 
-            label="Longform Strategy" 
-            count={itemCounts.blog} 
-            active={currentFilter.col === "blog"} 
-            onClick={() => { setFilter({ ...currentFilter, col: "blog" }); setView("board") }} 
-          />
-          <NavItem 
-            label="Social Threads" 
-            count={itemCounts.social} 
-            active={currentFilter.col === "social"} 
-            onClick={() => { setFilter({ ...currentFilter, col: "social" }); setView("board") }} 
-          />
-          <NavItem 
-            label="Planning Calendar" 
-            active={currentView === "calendar"} 
-            onClick={() => { setView("calendar") }} 
-          />
-          <div className="pt-4">
-            <a 
-              href="https://app.appsmith.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="nav-item w-full flex items-center justify-between group px-0 border-none bg-transparent hover:bg-transparent"
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto p-6 space-y-2 custom-scrollbar">
+        {NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+          const isActive = currentView === item.id;
+          
+          return (
+            <button
+              key={item.id}
+              onClick={() => setView(item.id)}
+              className={cn(
+                "w-full flex items-center justify-between p-4 rounded-lg transition-all duration-300 group",
+                isActive 
+                  ? "bg-dark text-white shadow-lg shadow-dark/10" 
+                  : "text-ash/70 hover:bg-light-grey hover:text-dark"
+              )}
             >
-              <span className="text-magenta font-bold underline underline-offset-4">Appsmith Admin Panel &rsaquo;</span>
-            </a>
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <div className="text-[9px] font-bold text-ash uppercase tracking-[0.2em] mb-4 opacity-50">Strategic Clusters</div>
-          <button 
-            onClick={() => setFilter({ ...currentFilter, cluster: "" })}
-            className={cn("nav-item w-full text-left italic font-display text-lg px-0", !currentFilter.cluster && "active !bg-transparent !text-magenta")}
-          >Global Voice</button>
-          {clusters.map(cluster => (
-            <button 
-              key={cluster.id}
-              onClick={() => setFilter({ ...currentFilter, cluster: cluster.id })}
-              className={cn("nav-item w-full text-left font-display text-lg px-0 italic transition-all hover:pl-2", currentFilter.cluster === cluster.id && "active !bg-transparent !text-magenta")}
-            >
-              <span className="text-[10px] font-sans font-bold not-italic opacity-30 mr-3">{cluster.id}</span> {cluster.name}
+              <div className="flex items-center gap-4">
+                <Icon size={18} className={cn("transition-transform group-hover:scale-110", isActive ? "text-turquoise" : "")} />
+                <span className="text-[13px] font-bold tracking-tight">{item.label}</span>
+              </div>
+              
+              {itemCounts[item.id] !== undefined && (
+                <span className={cn(
+                  "text-[10px] font-mono px-2 py-0.5 rounded-full border",
+                  isActive ? "border-white/20 text-white/40" : "border-mist text-ash/40"
+                )}>
+                  {itemCounts[item.id].toString().padStart(2, '0')}
+                </span>
+              )}
             </button>
-          ))}
-        </div>
+          );
+        })}
       </nav>
 
-      <div className="p-12 border-t border-mist bg-white/50">
-        <div className="text-[10px] font-bold text-ash uppercase tracking-widest mb-4">v1.4.0 Live</div>
-        <p className="text-[11px] leading-relaxed text-charcoal/60 italic font-display">
-          "The interface feels considered, unhurried, and expert."
-        </p>
+      {/* Footer Actions */}
+      <div className="p-6 border-t border-mist space-y-4">
+        <div className="flex items-center gap-4 p-4 rounded-xl bg-light-grey/50">
+          <div className="w-10 h-10 rounded-full bg-mist overflow-hidden border border-white">
+             {/* Avatar placeholder */}
+             <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-ash">MP</div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-dark truncate">BeanBag Media</p>
+            <p className="text-[10px] text-ash/60 truncate italic">Strategic Sanctuary</p>
+          </div>
+          <button 
+            onClick={handleLogout}
+            className="text-ash/40 hover:text-red-500 transition-colors"
+            title="Logout"
+          >
+            <LogOut size={16} />
+          </button>
+        </div>
+        
+        <div className="flex items-center justify-between px-2">
+           <span className="text-[9px] font-bold text-ash/30 uppercase tracking-widest">v3.0.0 Stable</span>
+           <div className="flex gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-cyan animate-pulse" />
+              <span className="text-[9px] font-bold text-cyan uppercase tracking-widest">Live Sync</span>
+           </div>
+        </div>
       </div>
     </aside>
   );
 };
-
-function NavItem({ label, count, active, onClick }: { label: string, count?: number, active: boolean, onClick: () => void }) {
-  return (
-    <button onClick={onClick} className={cn("nav-item w-full flex items-center justify-between group px-0 border-none bg-transparent hover:bg-transparent", active && "active")}>
-      <span className={cn("font-medium transition-colors", active ? "text-magenta underline decoration-magenta/30 underline-offset-8" : "text-charcoal/70 group-hover:text-magenta")}>{label}</span>
-      {count !== undefined && (
-        <span className={cn(
-          "text-[10px] font-bold transition-all", 
-          active ? "text-magenta" : "text-ash opacity-40 group-hover:opacity-100"
-        )}>
-          {count.toString().padStart(2, '0')}
-        </span>
-      )}
-    </button>
-  );
-}

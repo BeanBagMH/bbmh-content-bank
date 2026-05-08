@@ -1,85 +1,125 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
-import type { ContentItem } from '../../types';
+import { Plus, MoreVertical, Clock, MessageSquare, Link as LinkIcon } from 'lucide-react';
+import type { ContentItem, ContentStatus } from '../../types';
 import { Badge } from '../common/Badge';
+import { useContentStore } from '../../hooks/useContentStore';
 
 interface BoardViewProps {
   items: ContentItem[];
-  onCardClick: (id: number) => void;
+  onCardClick: (id: string) => void;
 }
+
+const COLUMNS: ContentStatus[] = [
+  'Raw Idea',
+  'Selected',
+  'Research',
+  'Scripting',
+  'Design',
+  'Editing',
+  'Review',
+  'Scheduled',
+  'Published'
+];
 
 export const BoardView: React.FC<BoardViewProps> = ({ items, onCardClick }) => {
-  return (
-    <div className="flex gap-16 items-start h-full">
-      <BoardColumn 
-        label="Video Production" 
-        items={items.filter(d => d.col === "video")} 
-        onCardClick={onCardClick} 
-      />
-      <BoardColumn 
-        label="Strategic Writing" 
-        items={items.filter(d => d.col === "blog")} 
-        onCardClick={onCardClick} 
-      />
-      <BoardColumn 
-        label="Micro-Content" 
-        items={items.filter(d => d.col === "social")} 
-        onCardClick={onCardClick} 
-      />
-    </div>
-  );
-};
+  const { updateItem } = useContentStore();
 
-interface BoardColumnProps {
-  label: string;
-  items: ContentItem[];
-  onCardClick: (id: number) => void;
-}
+  const handleDragStart = (e: any, id: string) => {
+    e.dataTransfer.setData('itemId', id);
+  };
 
-const BoardColumn: React.FC<BoardColumnProps> = ({ label, items, onCardClick }) => {
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, status: ContentStatus) => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData('itemId');
+    if (id) {
+      await updateItem(id, { status });
+    }
+  };
+
   return (
-    <div className="w-[380px] flex flex-col max-h-full">
-      <div className="pb-8 border-b border-mist flex items-baseline justify-between mb-8">
-        <h3 className="text-xl font-display text-graphite italic">{label}</h3>
-        <span className="text-[10px] font-bold text-ash opacity-40">{items.length.toString().padStart(2, '0')} PIECES</span>
-      </div>
-      
-      <div className="flex-1 overflow-y-auto space-y-12 custom-scrollbar pr-4">
-        {items.map(item => (
-          <motion.div 
-            key={item.id} 
-            layoutId={`card-${item.id}`}
-            onClick={() => onCardClick(item.id)} 
-            className="cursor-pointer group relative"
-          >
-            <div className="flex items-baseline gap-4 mb-4">
-               <span className="text-[9px] font-bold text-ash/40 font-mono tracking-tighter">0{item.id}</span>
-               <div className="h-px flex-1 bg-mist group-hover:bg-magenta/20 transition-colors" />
-               <span className="text-[8px] font-bold text-ash uppercase tracking-widest">{item.cluster}</span>
+    <div className="flex gap-6 overflow-x-auto pb-8 h-full custom-scrollbar items-start">
+      {COLUMNS.map((status) => (
+        <div 
+          key={status}
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, status)}
+          className="min-w-[320px] max-w-[320px] flex flex-col max-h-full bg-light-grey/30 rounded-2xl p-4"
+        >
+          {/* Column Header */}
+          <div className="flex items-center justify-between mb-6 px-2">
+            <div className="flex items-center gap-3">
+              <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-dark">{status}</h3>
+              <span className="text-[10px] font-mono text-ash/40 bg-white px-2 py-0.5 rounded-full border border-mist">
+                {items.filter(i => i.status === status).length.toString().padStart(2, '0')}
+              </span>
             </div>
-            
-            <h4 className="text-2xl font-display text-graphite leading-[1.2] mb-6 group-hover:text-magenta transition-colors italic">
-              {item.title}
-            </h4>
-            
-            <div className="flex items-center gap-6">
-              <Badge variant={item.fmt}>{item.fmt}</Badge>
-              {item.hasScript && (
-                <div className="flex items-center gap-2">
-                   <div className="w-1 h-1 bg-magenta rounded-full" />
-                   <span className="text-[8px] font-bold text-magenta uppercase tracking-widest">Drafted</span>
+            <button className="text-ash/40 hover:text-dark transition-colors">
+              <MoreVertical size={14} />
+            </button>
+          </div>
+
+          {/* Column Content */}
+          <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2 min-h-[200px]">
+            {items.filter(i => i.status === status).map((item) => (
+              <motion.div
+                key={item.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, item.id)}
+                onClick={() => onCardClick(item.id)}
+                layoutId={item.id}
+                className="bg-white border border-mist p-5 rounded-xl cursor-grab active:cursor-grabbing hover:border-cyan/40 hover:shadow-xl hover:shadow-dark/5 transition-all group relative"
+              >
+                <div className="flex justify-between items-start mb-3">
+                   <Badge variant={item.priority} className="text-[8px] px-1.5 py-0.5">{item.priority}</Badge>
+                   <span className="text-[9px] font-mono text-ash/30">#{item.id.slice(0, 4)}</span>
                 </div>
-              )}
-            </div>
-          </motion.div>
-        ))}
-        
-        <button className="w-full py-12 border-t border-mist text-[10px] font-bold text-ash/30 uppercase tracking-[0.3em] hover:text-magenta transition-all flex items-center justify-center gap-3">
-          <Plus size={14} />
-          Append Strategy
-        </button>
-      </div>
+
+                <h4 className="text-[15px] font-display font-bold text-dark leading-snug mb-4 group-hover:text-cyan transition-colors">
+                  {item.title}
+                </h4>
+
+                {item.content_cluster && (
+                  <div className="mb-4">
+                    <span className="text-[9px] font-bold text-ash/60 uppercase tracking-widest bg-light-grey px-2 py-1 rounded-md">
+                      {item.content_cluster}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between border-t border-mist/40 pt-4 mt-2">
+                  <div className="flex items-center gap-3">
+                     <div className="flex items-center gap-1 text-ash/40">
+                        <MessageSquare size={12} />
+                        <span className="text-[9px] font-bold">4</span>
+                     </div>
+                     <div className="flex items-center gap-1 text-ash/40">
+                        <LinkIcon size={12} />
+                        <span className="text-[9px] font-bold">2</span>
+                     </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                     <Clock size={12} className="text-ash/30" />
+                     <span className="text-[9px] font-bold text-ash/60">
+                        {item.publish_date ? new Date(item.publish_date).toLocaleDateString() : 'Unscheduled'}
+                     </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+
+            <button className="w-full py-4 border-2 border-dashed border-mist rounded-xl text-ash/40 hover:text-cyan hover:border-cyan/40 hover:bg-cyan/5 transition-all flex items-center justify-center gap-2 group">
+              <Plus size={16} className="group-hover:scale-125 transition-transform" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Add Piece</span>
+            </button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

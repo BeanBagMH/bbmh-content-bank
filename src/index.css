@@ -1,117 +1,100 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --paper: #fcfaf9;
+  /* Brand Colors */
+  --dark-grey: #252527;
+  --charcoal: #3f3f3f;
+  --cyan: #1f8e8d;
+  --pastel-turquoise: #9ae3d3;
+  --light-grey: #f2f2f2;
   --white: #ffffff;
-  --graphite: #1a1a1a;
-  --charcoal: #404040;
-  --ash: #8c8c8c;
-  --mist: #ececec;
-  --magenta: #e61e6e;
-  --magenta-deep: #b01754;
-  --magenta-whisper: rgba(230, 30, 110, 0.05);
   
-  --font-display: 'Cormorant Garamond', serif;
-  --font-sans: 'Instrument Sans', sans-serif;
-  --font-mono: 'Space Grotesk', monospace;
+  /* UI Tokens */
+  --bg: #fcfaf9;
+  --mist: #e2e2e2;
+  --ash: #666666;
+  --magenta: #e61e6e;
+  --magenta-whisper: #fdf2f7;
+  
+  /* Typography */
+  --font-display: 'Cabinet Grotesk', 'Inter', sans-serif;
+  --font-body: 'Roundo', 'Inter', sans-serif;
+  --font-serif: 'Instrument Serif', serif;
 }
 
-body {
-  margin: 0;
-  background-color: var(--paper);
-  color: var(--graphite);
-  font-family: var(--font-sans);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  * {
+    @apply m-0 p-0 box-border;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--bg);
+    color: var(--dark-grey);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    @apply font-bold tracking-tight;
+  }
+
+  .italic-serif {
+    font-family: var(--font-serif);
+    @apply italic;
+  }
 }
 
-h1, h2, h3, .font-display {
-  font-family: var(--font-display);
-  font-weight: 300;
-  font-style: italic;
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background: transparent;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
+
+::-webkit-scrollbar-thumb {
   background: var(--mist);
-  border-radius: 0;
+  border-radius: 10px;
 }
 
-.nav-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  color: var(--ash);
-  font-weight: 500;
-  font-size: 0.9rem;
-  transition: all 0.2s ease-out;
-  cursor: pointer;
-  border-left: 2px solid transparent;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ash);
 }
 
-.nav-item:hover {
-  color: var(--magenta);
-  background: var(--magenta-whisper);
+.custom-scrollbar-mini::-webkit-scrollbar {
+  width: 2px;
 }
 
-.nav-item.active {
-  color: var(--magenta);
-  background: var(--magenta-whisper);
-  border-left-color: var(--magenta);
+/* UI Utilities */
+.text-cyan { color: var(--cyan); }
+.bg-cyan { background-color: var(--cyan); }
+.text-turquoise { color: var(--pastel-turquoise); }
+.bg-dark { background-color: var(--dark-grey); }
+.text-dark { color: var(--dark-grey); }
+.border-mist { border-color: var(--mist); }
+
+/* Animation Overrides */
+.animate-in {
+  animation: animate-in 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.btn-editorial {
-  background: var(--graphite);
-  color: var(--white);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 500;
-  font-size: 0.75rem;
-  padding: 14px 32px;
-  border-radius: 0;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  align-items: center;
-  gap: 8px;
+@keyframes animate-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.btn-editorial:hover {
-  background: var(--magenta);
-  transform: translateY(-2px);
+/* Card Hover Effects */
+.hover-card {
+  @apply transition-all duration-300;
 }
 
-.card-editorial {
-  background: var(--white);
-  border: 1px solid var(--mist);
-  border-radius: 0;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.card-editorial:hover {
-  border-color: var(--magenta);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.04);
-}
-
-.input-editorial {
-  background: transparent;
-  border: 1px solid var(--mist);
-  border-radius: 4px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-  transition: all 0.2s ease-out;
-}
-
-.input-editorial:focus {
-  border-color: var(--magenta);
-  outline: none;
-  box-shadow: 0 0 0 4px var(--magenta-whisper);
+.hover-card:hover {
+  @apply -translate-y-1 shadow-xl shadow-dark/5;
 }
