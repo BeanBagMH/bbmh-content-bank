@@ -88,6 +88,7 @@ export interface ContentItem {
   };
   
   campaign_id: string | null;
+  archived: boolean;
   created_at: string;
   updated_at: string;
   last_updated_at: string;
@@ -100,7 +101,10 @@ export interface Idea {
   platform: Platform | null;
   content_cluster: ContentCluster | null;
   status: string;
+  converted_to_content_id: string | null;
+  archived: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Campaign {
@@ -112,16 +116,18 @@ export interface Campaign {
   end_date: string | null;
   notes: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Thumbnail {
   id: string;
   title: string;
   content_item_id: string | null;
-  headline: string | null;
+  thumbnail_headline: string | null;
   visual_description: string | null;
   image_url: string | null;
-  reference_links: string[];
+  reference_url: string | null;
   status: string;
   created_at: string;
+  updated_at: string;
 }

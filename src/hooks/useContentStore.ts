@@ -114,6 +114,40 @@ export function useContentStore() {
     }
   };
 
+  const updateIdea = async (id: string, updates: Partial<Idea>) => {
+    try {
+      const updatedIdea = await db.updateIdea(id, updates);
+      setIdeas(prev => prev.map(idea => idea.id === id ? updatedIdea : idea));
+      return updatedIdea;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  const deleteIdea = async (id: string) => {
+    try {
+      await db.deleteIdea(id);
+      setIdeas(prev => prev.filter(idea => idea.id !== id));
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  const convertIdeaToContent = async (idea: Idea) => {
+    try {
+      const newItem = await db.convertIdeaToContent(idea);
+      setItems(prev => [newItem, ...prev]);
+      setIdeas(prev => prev.map(i => i.id === idea.id ? { ...i, status: 'Converted', converted_to_content_id: newItem.id } : i));
+      return newItem;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  // --- Campaign Actions ---
   const addCampaign = async (campaign: Partial<Campaign>) => {
     try {
       const newCampaign = await db.addCampaign(campaign);
@@ -125,11 +159,54 @@ export function useContentStore() {
     }
   };
 
+  const updateCampaign = async (id: string, updates: Partial<Campaign>) => {
+    try {
+      const updatedCampaign = await db.updateCampaign(id, updates);
+      setCampaigns(prev => prev.map(c => c.id === id ? updatedCampaign : c));
+      return updatedCampaign;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  const deleteCampaign = async (id: string) => {
+    try {
+      await db.deleteCampaign(id);
+      setCampaigns(prev => prev.filter(c => c.id !== id));
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  // --- Thumbnail Actions ---
   const addThumbnail = async (thumbnail: Partial<Thumbnail>) => {
     try {
       const newThumbnail = await db.addThumbnail(thumbnail);
       setThumbnails(prev => [newThumbnail, ...prev]);
       return newThumbnail;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  const updateThumbnail = async (id: string, updates: Partial<Thumbnail>) => {
+    try {
+      const updatedThumbnail = await db.updateThumbnail(id, updates);
+      setThumbnails(prev => prev.map(t => t.id === id ? updatedThumbnail : t));
+      return updatedThumbnail;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  const deleteThumbnail = async (id: string) => {
+    try {
+      await db.deleteThumbnail(id);
+      setThumbnails(prev => prev.filter(t => t.id !== id));
     } catch (err: any) {
       setError(err.message);
       throw err;
@@ -157,8 +234,15 @@ export function useContentStore() {
     deleteItem,
     duplicateItem,
     addIdea,
+    updateIdea,
+    deleteIdea,
+    convertIdeaToContent,
     addCampaign,
+    updateCampaign,
+    deleteCampaign,
     addThumbnail,
+    updateThumbnail,
+    deleteThumbnail,
     updateProfile,
     currentProfile,
     initialized,

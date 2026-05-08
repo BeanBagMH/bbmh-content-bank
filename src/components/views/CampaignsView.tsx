@@ -4,6 +4,7 @@ import { Flag, Plus, Users, Layout, ArrowUpRight } from 'lucide-react';
 import type { Campaign, ContentItem } from '../../types';
 import { cn } from '../common/Badge';
 import { useContentStore } from '../../hooks/useContentStore';
+import { NewCampaignModal } from '../modals/NewCampaignModal';
 
 interface CampaignsViewProps {
   campaigns: Campaign[];
@@ -11,25 +12,7 @@ interface CampaignsViewProps {
 }
 
 export const CampaignsView: React.FC<CampaignsViewProps> = ({ campaigns, items }) => {
-  const { addCampaign } = useContentStore();
-
-  const handleNewCluster = async () => {
-    const name = prompt('Enter Cluster Name:');
-    if (!name) return;
-    const objective = prompt('Enter Cluster Objective:');
-    
-    try {
-      await addCampaign({
-        name,
-        objective: objective || '',
-        status: 'Planning',
-        start_date: new Date().toISOString().split('T')[0]
-      });
-      alert('Cluster created!');
-    } catch (err) {
-      alert('Failed to create cluster');
-    }
-  };
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   return (
     <div className="space-y-12">
@@ -39,13 +22,15 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({ campaigns, items }
            <p className="text-ash/60 text-[11px] font-bold uppercase tracking-[0.4em]">High-Level Campaign Management</p>
         </div>
         <button 
-          onClick={handleNewCluster}
+          onClick={() => setIsModalOpen(true)}
           className="bg-dark text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-cyan transition-all shadow-lg shadow-dark/5"
         >
           <Plus size={18} />
           <span className="text-[11px] font-bold uppercase tracking-widest">New Cluster</span>
         </button>
       </div>
+
+      <NewCampaignModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {campaigns.length > 0 ? (
@@ -62,7 +47,7 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({ campaigns, items }
                 <Flag size={32} />
              </div>
              <p className="text-sm font-bold text-ash/40 uppercase tracking-widest">No active clusters found</p>
-             <button className="mt-6 text-cyan text-[11px] font-black uppercase tracking-widest hover:tracking-[0.2em] transition-all">Initialize First Campaign →</button>
+             <button onClick={() => setIsModalOpen(true)} className="mt-6 text-cyan text-[11px] font-black uppercase tracking-widest hover:tracking-[0.2em] transition-all">Initialize First Campaign →</button>
           </div>
         )}
       </div>

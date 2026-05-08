@@ -10,7 +10,7 @@ interface QuickIdeaModalProps {
 }
 
 export const QuickIdeaModal: React.FC<QuickIdeaModalProps> = ({ isOpen, onClose }) => {
-  const { addItem } = useContentStore();
+  const { addIdea } = useContentStore();
   const [title, setTitle] = React.useState('');
   const [note, setNote] = React.useState('');
   const [platform, setPlatform] = React.useState<Platform>('Instagram');
@@ -21,14 +21,12 @@ export const QuickIdeaModal: React.FC<QuickIdeaModalProps> = ({ isOpen, onClose 
     if (!title) return;
     
     try {
-      await addItem({
+      await addIdea({
         title,
-        notes: note,
+        note,
         platform,
         content_cluster: cluster,
-        status: 'Raw Idea',
-        content_type: 'Raw Idea' as any,
-        priority: 'Medium'
+        status: 'New'
       });
       setTitle('');
       setNote('');

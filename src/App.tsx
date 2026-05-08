@@ -12,6 +12,7 @@ import { CampaignsView } from './components/views/CampaignsView';
 import { ThumbnailBankView } from './components/views/ThumbnailBankView';
 import { PerformanceView } from './components/views/PerformanceView';
 import { SettingsView } from './components/views/SettingsView';
+import { IdeasVaultView } from './components/views/IdeasVaultView';
 import { DualView } from './components/views/DualView';
 import { BottomNav } from './components/layout/BottomNav';
 import { DetailPanel } from './components/DetailPanel';
@@ -179,12 +180,7 @@ export default function App() {
               )}
 
               {/* Ideas Vault */}
-              {view === 'ideas-vault' && (
-                <div className="space-y-12">
-                   <h2 className="text-5xl font-display font-bold text-dark tracking-tighter">Ideas Vault</h2>
-                   <GridView items={items.filter(i => i.status === 'Raw Idea')} onCardClick={setSelectedId} />
-                </div>
-              )}
+              {view === 'ideas-vault' && <IdeasVaultView />}
 
               {/* Scripts Section */}
               {view === 'scripts' && (

@@ -36,16 +36,30 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
   const { items, campaigns, updateItem, deleteItem, duplicateItem } = useContentStore();
   const [activeTab, setActiveTab] = React.useState('info');
   const [isSaving, setIsSaving] = React.useState(false);
+  const [hasChanges, setHasChanges] = React.useState(false);
   
-  const item = items.find(i => i.id === selectedId);
+  const originalItem = items.find(i => i.id === selectedId);
+  const [localItem, setLocalItem] = React.useState<ContentItem | null>(null);
+  
+  React.useEffect(() => {
+    if (originalItem) {
+      setLocalItem({ ...originalItem });
+      setHasChanges(false);
+    }
+  }, [originalItem, selectedId]);
 
-  // Auto-save logic
-  const handleUpdate = async (updates: Partial<ContentItem>) => {
-    if (!selectedId) return;
+  const handleLocalUpdate = (updates: Partial<ContentItem>) => {
+    setLocalItem(prev => prev ? { ...prev, ...updates } : null);
+    setHasChanges(true);
+  };
+
+  const handleSave = async () => {
+    if (!selectedId || !localItem) return;
     setIsSaving(true);
     try {
-      await updateItem(selectedId, updates);
-      setTimeout(() => setIsSaving(false), 800);
+      await updateItem(selectedId, localItem);
+      setHasChanges(false);
+      setTimeout(() => setIsSaving(false), 500);
     } catch (e) {
       console.error(e);
       setIsSaving(false);
@@ -61,12 +75,12 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
   };
 
   const handleDuplicate = async () => {
-    if (!item) return;
-    await duplicateItem(item);
+    if (!originalItem) return;
+    await duplicateItem(originalItem);
     onClose();
   };
 
-  if (!selectedId) return null;
+  if (!selectedId || !localItem) return null;
 
   return (
     <AnimatePresence>
@@ -87,15 +101,23 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
                <div className="h-6 w-px bg-mist" />
                <div className="flex items-center gap-3">
                   <span className="text-[10px] font-mono text-ash/40">#{selectedId.slice(0, 8)}</span>
-                  {isSaving ? (
-                    <div className="flex items-center gap-2 text-cyan">
-                       <div className="w-1.5 h-1.5 bg-cyan rounded-full animate-pulse" />
-                       <span className="text-[10px] font-bold uppercase tracking-widest">Saving...</span>
-                    </div>
+                  {hasChanges ? (
+                    <button 
+                      onClick={handleSave}
+                      disabled={isSaving}
+                      className="bg-cyan text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-dark transition-all shadow-lg shadow-cyan/20 flex items-center gap-2"
+                    >
+                       {isSaving ? (
+                         <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                       ) : (
+                         <CheckCircle2 size={12} />
+                       )}
+                       {isSaving ? 'Saving...' : 'Save Changes'}
+                    </button>
                   ) : (
                     <div className="flex items-center gap-2 text-ash/40">
                        <CheckCircle2 size={12} />
-                       <span className="text-[10px] font-bold uppercase tracking-widest">Saved</span>
+                       <span className="text-[10px] font-bold uppercase tracking-widest">Synced</span>
                     </div>
                   )}
                </div>
@@ -104,7 +126,7 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
             <div className="flex items-center gap-2">
                <ActionButton 
                  onClick={() => {
-                   const text = `Strategy: ${item?.title}\nStatus: ${item?.status}\nHook: ${item?.hook || 'No hook set'}\nView: ${window.location.href}`;
+                   const text = `Strategy: ${localItem.title}\nStatus: ${localItem.status}\nHook: ${localItem.hook || 'No hook set'}\nView: ${window.location.href}`;
                    navigator.clipboard.writeText(text);
                    alert('Strategy summary copied to clipboard!');
                  }} 
@@ -112,7 +134,7 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
                  title="Share Strategy" 
                />
                <ActionButton onClick={handleDuplicate} icon={Copy} title="Duplicate" />
-               <ActionButton onClick={() => handleUpdate({ status: 'Archived' })} icon={Archive} title="Archive" />
+               <ActionButton onClick={() => updateItem(selectedId, { archived: true })} icon={Archive} title="Archive" />
                <ActionButton onClick={handleDelete} icon={Trash2} title="Delete" className="hover:text-red-500 hover:bg-red-50" />
             </div>
           </div>
@@ -120,8 +142,8 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
           {/* Item Title Section */}
           <div className="p-8 lg:p-10 pb-0">
              <textarea 
-               value={item?.title || ''}
-               onChange={(e) => handleUpdate({ title: e.target.value })}
+               value={localItem.title || ''}
+               onChange={(e) => handleLocalUpdate({ title: e.target.value })}
                placeholder="Piece Title..."
                className="w-full text-3xl lg:text-4xl font-display font-bold text-dark border-none outline-none bg-transparent resize-none leading-tight placeholder:text-ash/20"
                rows={2}
@@ -151,23 +173,23 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
           <div className="flex-1 overflow-y-auto p-8 lg:p-10 space-y-12 custom-scrollbar">
              {activeTab === 'info' && (
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
-                  <PropertyField label="Status" value={item?.status} onChange={(v) => handleUpdate({ status: v as ContentStatus })} options={['Raw Idea', 'Selected', 'Research', 'Scripting', 'Design', 'Editing', 'Review', 'Scheduled', 'Published']} />
-                  <PropertyField label="Type" value={item?.content_type} onChange={(v) => handleUpdate({ content_type: v as ContentType })} options={['Reel', 'Carousel', 'LinkedIn Post', 'Blog', 'YouTube Short', 'Instagram Post', 'Twitter/X Post', 'Case Study', 'Email', 'Ad Creative', 'Script']} />
-                  <PropertyField label="Platform" value={item?.platform} onChange={(v) => handleUpdate({ platform: v as Platform })} options={['Instagram', 'LinkedIn', 'YouTube', 'Website Blog', 'Twitter/X', 'Email', 'Multi-platform']} />
-                  <PropertyField label="Cluster" value={item?.content_cluster} onChange={(v) => handleUpdate({ content_cluster: v as ContentCluster })} options={['Brand Invisibility', 'Trust Building', 'Price War', 'Website Strategy', 'Branding', 'Design Education', 'AI Workflow', 'Client Case Study', 'Behind The Scenes', 'Founder Story', 'Sales / Outreach', 'General']} />
-                  <PropertyField label="Priority" value={item?.priority} onChange={(v) => handleUpdate({ priority: v as Priority })} options={['Low', 'Medium', 'High', 'Urgent']} />
+                  <PropertyField label="Status" value={localItem.status} onChange={(v) => handleLocalUpdate({ status: v as ContentStatus })} options={['Raw Idea', 'Selected', 'Research', 'Scripting', 'Design', 'Editing', 'Review', 'Scheduled', 'Published']} />
+                  <PropertyField label="Type" value={localItem.content_type} onChange={(v) => handleLocalUpdate({ content_type: v as ContentType })} options={['Reel', 'Carousel', 'LinkedIn Post', 'Blog', 'YouTube Short', 'Instagram Post', 'Twitter/X Post', 'Case Study', 'Email', 'Ad Creative', 'Script']} />
+                  <PropertyField label="Platform" value={localItem.platform} onChange={(v) => handleLocalUpdate({ platform: v as Platform })} options={['Instagram', 'LinkedIn', 'YouTube', 'Website Blog', 'Twitter/X', 'Email', 'Multi-platform']} />
+                  <PropertyField label="Cluster" value={localItem.content_cluster} onChange={(v) => handleLocalUpdate({ content_cluster: v as ContentCluster })} options={['Brand Invisibility', 'Trust Building', 'Price War', 'Website Strategy', 'Branding', 'Design Education', 'AI Workflow', 'Client Case Study', 'Behind The Scenes', 'Founder Story', 'Sales / Outreach', 'General']} />
+                  <PropertyField label="Priority" value={localItem.priority} onChange={(v) => handleLocalUpdate({ priority: v as Priority })} options={['Low', 'Medium', 'High', 'Urgent']} />
                   <PropertyField 
                     label="Campaign Cluster" 
-                    value={item?.campaign_id} 
-                    onChange={(v) => handleUpdate({ campaign_id: v })} 
+                    value={localItem.campaign_id} 
+                    onChange={(v) => handleLocalUpdate({ campaign_id: v })} 
                     options={campaigns.map((c: any) => ({ label: c.name, value: c.id }))} 
                   />
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-ash uppercase tracking-widest">Publish Date</label>
                     <input 
                       type="date" 
-                      value={item?.publish_date || ''}
-                      onChange={(e) => handleUpdate({ publish_date: e.target.value })}
+                      value={localItem.publish_date || ''}
+                      onChange={(e) => handleLocalUpdate({ publish_date: e.target.value })}
                       className="w-full bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-bold outline-none focus:border-cyan focus:bg-white transition-all cursor-pointer [color-scheme:light]"
                     />
                   </div>
@@ -185,17 +207,17 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
                          <span>Export as PDF</span>
                       </button>
                    </div>
-                   <EditorSection label="Hook / Headline" value={item?.hook} onChange={(v: string) => handleUpdate({ hook: v })} placeholder="The opening signal..." />
-                   <EditorSection label="Script / Body" value={item?.script} onChange={(v: string) => handleUpdate({ script: v })} placeholder="The core message..." minHeight="300px" />
-                   <EditorSection label="Caption" value={item?.caption} onChange={(v: string) => handleUpdate({ caption: v })} placeholder="For the platforms..." />
-                   <EditorSection label="Call to Action" value={item?.cta} onChange={(v: string) => handleUpdate({ cta: v })} placeholder="The strategic move..." />
+                   <EditorSection label="Hook / Headline" value={localItem.hook} onChange={(v: string) => handleLocalUpdate({ hook: v })} placeholder="The opening signal..." />
+                   <EditorSection label="Script / Body" value={localItem.script} onChange={(v: string) => handleLocalUpdate({ script: v })} placeholder="The core message..." minHeight="300px" />
+                   <EditorSection label="Caption" value={localItem.caption} onChange={(v: string) => handleLocalUpdate({ caption: v })} placeholder="For the platforms..." />
+                   <EditorSection label="Call to Action" value={localItem.cta} onChange={(v: string) => handleLocalUpdate({ cta: v })} placeholder="The strategic move..." />
                 </div>
               )}
 
              {activeTab === 'creative' && (
                <div className="space-y-10">
-                  <EditorSection label="Thumbnail Idea" value={item?.thumbnail_idea} onChange={(v: string) => handleUpdate({ thumbnail_idea: v })} placeholder="Visual concept..." />
-                  <EditorSection label="Visual Direction" value={item?.visual_direction} onChange={(v: string) => handleUpdate({ visual_direction: v })} placeholder="Aesthetic notes..." />
+                  <EditorSection label="Thumbnail Idea" value={localItem.thumbnail_idea} onChange={(v: string) => handleLocalUpdate({ thumbnail_idea: v })} placeholder="Visual concept..." />
+                  <EditorSection label="Visual Direction" value={localItem.visual_direction} onChange={(v: string) => handleLocalUpdate({ visual_direction: v })} placeholder="Aesthetic notes..." />
                   
                   <div className="grid grid-cols-1 gap-8">
                     <div className="space-y-4">
@@ -203,13 +225,13 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
                       <div className="flex gap-4">
                         <input 
                           type="url" 
-                          value={item?.reference_url || ''}
-                          onChange={(e) => handleUpdate({ reference_url: e.target.value })}
+                          value={localItem.reference_url || ''}
+                          onChange={(e) => handleLocalUpdate({ reference_url: e.target.value })}
                           placeholder="https://..."
                           className="flex-1 bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-medium outline-none focus:border-cyan transition-all"
                         />
-                        {item?.reference_url && (
-                          <a href={item.reference_url} target="_blank" rel="noopener noreferrer" className="p-4 bg-dark text-white rounded-xl hover:bg-cyan transition-all">
+                        {localItem.reference_url && (
+                          <a href={localItem.reference_url} target="_blank" rel="noopener noreferrer" className="p-4 bg-dark text-white rounded-xl hover:bg-cyan transition-all">
                              <ExternalLink size={18} />
                           </a>
                         )}
@@ -221,13 +243,13 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
                       <div className="flex gap-4">
                         <input 
                           type="url" 
-                          value={item?.asset_link || ''}
-                          onChange={(e) => handleUpdate({ asset_link: e.target.value })}
+                          value={localItem.asset_link || ''}
+                          onChange={(e) => handleLocalUpdate({ asset_link: e.target.value })}
                           placeholder="https://framer.com/..."
                           className="flex-1 bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-medium outline-none focus:border-cyan transition-all"
                         />
-                        {item?.asset_link && (
-                          <a href={item.asset_link} target="_blank" rel="noopener noreferrer" className="p-4 bg-dark text-white rounded-xl hover:bg-cyan transition-all">
+                        {localItem.asset_link && (
+                          <a href={localItem.asset_link} target="_blank" rel="noopener noreferrer" className="p-4 bg-dark text-white rounded-xl hover:bg-cyan transition-all">
                              <ExternalLink size={18} />
                           </a>
                         )}
@@ -244,13 +266,13 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
                     <div className="flex gap-4">
                       <input 
                         type="url" 
-                        value={item?.published_url || ''}
-                        onChange={(e) => handleUpdate({ published_url: e.target.value })}
+                        value={localItem.published_url || ''}
+                        onChange={(e) => handleLocalUpdate({ published_url: e.target.value })}
                         placeholder="https://..."
                         className="flex-1 bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-medium outline-none focus:border-cyan transition-all"
                       />
-                      {item?.published_url && (
-                        <a href={item.published_url} target="_blank" rel="noopener noreferrer" className="p-4 bg-dark text-white rounded-xl hover:bg-cyan transition-all">
+                      {localItem.published_url && (
+                        <a href={localItem.published_url} target="_blank" rel="noopener noreferrer" className="p-4 bg-dark text-white rounded-xl hover:bg-cyan transition-all">
                            <ExternalLink size={18} />
                         </a>
                       )}
@@ -262,12 +284,12 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
              {activeTab === 'performance' && (
                <div className="space-y-10">
                   <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-                     <PerformanceInput label="Views" value={item?.performance_stats?.views} onChange={(v: string) => handleUpdate({ performance_stats: { ...item?.performance_stats, views: parseInt(v) || 0 } })} />
-                     <PerformanceInput label="Likes" value={item?.performance_stats?.likes} onChange={(v: string) => handleUpdate({ performance_stats: { ...item?.performance_stats, likes: parseInt(v) || 0 } })} />
-                     <PerformanceInput label="Comments" value={item?.performance_stats?.comments} onChange={(v: string) => handleUpdate({ performance_stats: { ...item?.performance_stats, comments: parseInt(v) || 0 } })} />
-                     <PerformanceInput label="Shares" value={item?.performance_stats?.shares} onChange={(v: string) => handleUpdate({ performance_stats: { ...item?.performance_stats, shares: parseInt(v) || 0 } })} />
-                     <PerformanceInput label="Saves" value={item?.performance_stats?.saves} onChange={(v: string) => handleUpdate({ performance_stats: { ...item?.performance_stats, saves: parseInt(v) || 0 } })} />
-                     <PerformanceInput label="Leads" value={item?.performance_stats?.leads} onChange={(v: string) => handleUpdate({ performance_stats: { ...item?.performance_stats, leads: parseInt(v) || 0 } })} />
+                     <PerformanceInput label="Views" value={localItem.performance_stats?.views} onChange={(v: string) => handleLocalUpdate({ performance_stats: { ...localItem.performance_stats, views: parseInt(v) || 0 } })} />
+                     <PerformanceInput label="Likes" value={localItem.performance_stats?.likes} onChange={(v: string) => handleLocalUpdate({ performance_stats: { ...localItem.performance_stats, likes: parseInt(v) || 0 } })} />
+                     <PerformanceInput label="Comments" value={localItem.performance_stats?.comments} onChange={(v: string) => handleLocalUpdate({ performance_stats: { ...localItem.performance_stats, comments: parseInt(v) || 0 } })} />
+                     <PerformanceInput label="Shares" value={localItem.performance_stats?.shares} onChange={(v: string) => handleLocalUpdate({ performance_stats: { ...localItem.performance_stats, shares: parseInt(v) || 0 } })} />
+                     <PerformanceInput label="Saves" value={localItem.performance_stats?.saves} onChange={(v: string) => handleLocalUpdate({ performance_stats: { ...localItem.performance_stats, saves: parseInt(v) || 0 } })} />
+                     <PerformanceInput label="Leads" value={localItem.performance_stats?.leads} onChange={(v: string) => handleLocalUpdate({ performance_stats: { ...localItem.performance_stats, leads: parseInt(v) || 0 } })} />
                   </div>
                </div>
              )}
