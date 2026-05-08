@@ -44,6 +44,35 @@ export function useContentStore() {
 
   useEffect(() => {
     fetchData();
+
+    // --- Realtime Subscription ---
+    const channel = db.supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'ideas' },
+        () => fetchData()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'campaigns' },
+        () => fetchData()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'thumbnails' },
+        () => fetchData()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'team_members' },
+        () => fetchData()
+      )
+      .subscribe();
+
+    return () => {
+      db.supabase.removeChannel(channel);
+    };
   }, [fetchData]);
 
   // --- Content Item Actions ---

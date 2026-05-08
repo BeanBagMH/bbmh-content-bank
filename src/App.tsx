@@ -12,6 +12,7 @@ import { CampaignsView } from './components/views/CampaignsView';
 import { ThumbnailBankView } from './components/views/ThumbnailBankView';
 import { PerformanceView } from './components/views/PerformanceView';
 import { SettingsView } from './components/views/SettingsView';
+import { DualView } from './components/views/DualView';
 import { BottomNav } from './components/layout/BottomNav';
 import { DetailPanel } from './components/DetailPanel';
 import { NewContentModal } from './components/modals/NewContentModal';
@@ -43,6 +44,7 @@ export default function App() {
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [isNewContentModalOpen, setIsNewContentModalOpen] = React.useState(false);
   const [prefilledDate, setPrefilledDate] = React.useState<string | null>(null);
+  const [prefilledStatus, setPrefilledStatus] = React.useState<string>('Raw Idea');
   const [isQuickIdeaModalOpen, setIsQuickIdeaModalOpen] = React.useState(false);
   const [session, setSession] = React.useState<any>(null);
   const [authLoading, setAuthLoading] = React.useState(true);
@@ -164,6 +166,18 @@ export default function App() {
                 />
               )}
 
+              {view === 'planner' && (
+                <DualView 
+                  items={items} 
+                  onCardClick={setSelectedId} 
+                  onNewContent={(date?: string, status?: string) => {
+                    setPrefilledDate(date || null);
+                    setPrefilledStatus(status || 'Raw Idea');
+                    setIsNewContentModalOpen(true);
+                  }} 
+                />
+              )}
+
               {/* Ideas Vault */}
               {view === 'ideas-vault' && (
                 <div className="space-y-12">
@@ -199,8 +213,10 @@ export default function App() {
         onClose={() => {
           setIsNewContentModalOpen(false);
           setPrefilledDate(null);
+          setPrefilledStatus('Raw Idea');
         }}
         prefilledDate={prefilledDate}
+        prefilledStatus={prefilledStatus}
       />
 
       <QuickIdeaModal 

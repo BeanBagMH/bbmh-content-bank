@@ -138,7 +138,18 @@ export const SettingsView: React.FC = () => {
               <p className="text-ash/60 text-sm leading-relaxed font-medium">Export your strategic data or reset the workspace environment. Warning: This action is permanent.</p>
               
               <div className="flex gap-4 pt-4">
-                 <button className="flex-1 py-4 bg-light-grey rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-mist transition-all">Export JSON</button>
+                 <button 
+                   onClick={() => {
+                     const blob = new Blob([JSON.stringify({ exported_at: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+                     const a = document.createElement('a');
+                     a.href = URL.createObjectURL(blob);
+                     a.download = 'bbmh-strategy-export.json';
+                     a.click();
+                   }}
+                   className="flex-1 py-4 bg-light-grey rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-mist transition-all"
+                 >
+                   Export JSON
+                 </button>
                  <button className="flex-1 py-4 border border-red-100 text-red-500 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">Reset OS</button>
               </div>
            </section>

@@ -16,8 +16,24 @@ interface CalendarViewProps {
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+import { useContentStore } from '../../hooks/useContentStore';
+
 export const CalendarView: React.FC<CalendarViewProps> = ({ items, onCardClick, onNewContent }) => {
   const [currentDate, setCurrentDate] = React.useState(new Date());
+  const { updateItem } = useContentStore();
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e: React.DragEvent, date: string) => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData('itemId');
+    if (id) {
+      await updateItem(id, { publish_date: date, status: 'Scheduled' });
+    }
+  };
   
   const month = currentDate.getMonth();
   const year = currentDate.getFullYear();
@@ -86,7 +102,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ items, onCardClick, 
           ))}
         </div>
         
-        <div className="flex-1 grid grid-cols-7 grid-rows-5 divide-x divide-y divide-mist/40">
+        <div className="flex-1 grid grid-cols-7 auto-rows-fr divide-x divide-y divide-mist/40">
           {Array.from({ length: totalCells }).map((_, i) => {
             const dayNum = i - offset + 1;
             const isCurrentMonth = dayNum >= 1 && dayNum <= totalDays;
@@ -101,6 +117,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ items, onCardClick, 
             return (
               <div 
                 key={i} 
+                onDragOver={handleDragOver}
+                onDrop={(e) => isCurrentMonth && dateStr && handleDrop(e, dateStr)}
                 className={cn(
                   "p-4 min-h-[140px] transition-all relative flex flex-col group",
                   !isCurrentMonth ? "bg-light-grey/20" : "hover:bg-cyan/[0.02]"

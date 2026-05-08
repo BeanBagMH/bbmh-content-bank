@@ -8,7 +8,8 @@ import {
   Image as ImageIcon, 
   BarChart3, 
   Settings,
-  LogOut
+  LogOut,
+  Layout
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { cn } from '../common/Badge';
@@ -21,6 +22,7 @@ interface SidebarProps {
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'planner', label: 'Master Planner', icon: Layout },
   { id: 'content-bank', label: 'Content Bank', icon: Database },
   { id: 'ideas-vault', label: 'Ideas Vault', icon: Lightbulb },
   { id: 'calendar', label: 'Calendar', icon: Calendar },

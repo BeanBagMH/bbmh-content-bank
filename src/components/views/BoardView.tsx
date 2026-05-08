@@ -8,6 +8,7 @@ import { useContentStore } from '../../hooks/useContentStore';
 interface BoardViewProps {
   items: ContentItem[];
   onCardClick: (id: string) => void;
+  onNewContent?: (status: ContentStatus) => void;
 }
 
 const COLUMNS: ContentStatus[] = [
@@ -22,7 +23,7 @@ const COLUMNS: ContentStatus[] = [
   'Published'
 ];
 
-export const BoardView: React.FC<BoardViewProps> = ({ items, onCardClick }) => {
+export const BoardView: React.FC<BoardViewProps> = ({ items, onCardClick, onNewContent }) => {
   const { updateItem } = useContentStore();
 
   const handleDragStart = (e: any, id: string) => {
@@ -113,7 +114,10 @@ export const BoardView: React.FC<BoardViewProps> = ({ items, onCardClick }) => {
               </motion.div>
             ))}
 
-            <button className="w-full py-4 border-2 border-dashed border-mist rounded-xl text-ash/40 hover:text-cyan hover:border-cyan/40 hover:bg-cyan/5 transition-all flex items-center justify-center gap-2 group">
+            <button 
+              onClick={() => onNewContent?.(status)}
+              className="w-full py-4 border-2 border-dashed border-mist rounded-xl text-ash/40 hover:text-cyan hover:border-cyan/40 hover:bg-cyan/5 transition-all flex items-center justify-center gap-2 group"
+            >
               <Plus size={16} className="group-hover:scale-125 transition-transform" />
               <span className="text-[10px] font-bold uppercase tracking-widest">Add Piece</span>
             </button>

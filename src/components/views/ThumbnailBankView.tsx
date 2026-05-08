@@ -16,18 +16,17 @@ export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // In a real app, you'd upload to Supabase Storage here.
-      // For now, we'll create a mockup entry.
+      const localUrl = URL.createObjectURL(file);
       try {
         await addThumbnail({
           title: file.name,
           status: 'Draft',
+          image_url: localUrl,
           headline: 'New Hook Concept',
           visual_description: 'Uploaded from device'
         });
-        alert('Asset added to bank!');
       } catch (err) {
-        alert('Failed to add asset');
+        console.error('Failed to add asset:', err);
       }
     }
   };
@@ -86,10 +85,13 @@ const ThumbnailCard = ({ thumbnail, parentItem }: { thumbnail: Thumbnail, parent
   >
     {/* Aspect Ratio Container (16:9 for thumbnails, or 9:16 for Reels) */}
     <div className="aspect-[16/9] bg-light-grey relative overflow-hidden">
-       {/* In a real app, this would be <img>. Using a placeholder for now. */}
-       <div className="absolute inset-0 flex items-center justify-center text-ash/10">
-          <ImageIcon size={48} />
-       </div>
+       {thumbnail.image_url ? (
+         <img src={thumbnail.image_url} alt={thumbnail.title} className="w-full h-full object-cover" />
+       ) : (
+         <div className="absolute inset-0 flex items-center justify-center text-ash/10">
+            <ImageIcon size={48} />
+         </div>
+       )}
        
        {/* Overlay Actions */}
        <div className="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">

@@ -8,9 +8,10 @@ interface NewContentModalProps {
   isOpen: boolean;
   onClose: () => void;
   prefilledDate?: string | null;
+  prefilledStatus?: string;
 }
 
-export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClose, prefilledDate }) => {
+export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClose, prefilledDate, prefilledStatus }) => {
   const { addItem } = useContentStore();
   const [formData, setFormData] = React.useState({
     title: '',
@@ -30,10 +31,14 @@ export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClos
   });
 
   React.useEffect(() => {
-    if (prefilledDate) {
-      setFormData(prev => ({ ...prev, publish_date: prefilledDate }));
+    if (prefilledDate || prefilledStatus) {
+      setFormData(prev => ({ 
+        ...prev, 
+        publish_date: prefilledDate || prev.publish_date,
+        status: (prefilledStatus as ContentStatus) || prev.status
+      }));
     }
-  }, [prefilledDate]);
+  }, [prefilledDate, prefilledStatus]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
