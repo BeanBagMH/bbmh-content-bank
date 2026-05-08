@@ -48,8 +48,9 @@ export function useContentStore() {
     // --- Realtime Subscription Safety Shield ---
     if (!supabase) return;
 
-    // --- Realtime Subscription (Correct Order) ---
-    const channel = supabase.channel('schema-db-changes');
+    // --- Realtime Subscription (Infinite Stability Pattern) ---
+    const channelId = `db-sync-${Math.random().toString(36).slice(2, 9)}`;
+    const channel = supabase.channel(channelId);
     
     channel
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ideas' }, () => fetchData())
