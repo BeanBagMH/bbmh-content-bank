@@ -97,7 +97,7 @@ export default function App() {
     return items.filter(item => {
       const matchesSearch = !filter.search || 
         item.title.toLowerCase().includes(filter.search.toLowerCase()) ||
-        item.content_cluster?.toLowerCase().includes(filter.search.toLowerCase());
+        item.cluster?.toLowerCase().includes(filter.search.toLowerCase());
       
       const matchesStatus = !filter.status || item.status === filter.status;
       const matchesPlatform = !filter.platform || item.platform === filter.platform;

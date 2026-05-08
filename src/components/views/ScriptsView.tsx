@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Copy, CheckCircle2, Terminal } from 'lucide-react';
 import type { ContentItem } from '../../types';
 import { useContentStore } from '../../hooks/useContentStore';

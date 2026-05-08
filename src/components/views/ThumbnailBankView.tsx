@@ -78,7 +78,7 @@ export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails
   );
 };
 
-const ThumbnailCard = ({ thumbnail, parentItem }: { thumbnail: Thumbnail, parentItem?: ContentItem }) => (
+const ThumbnailCard = ({ thumbnail, parentItem }: { thumbnail: ThumbnailAsset, parentItem?: ContentItem }) => (
   <motion.div 
     whileHover={{ y: -4 }}
     className="group relative bg-white border border-mist rounded-2xl overflow-hidden shadow-sm"
