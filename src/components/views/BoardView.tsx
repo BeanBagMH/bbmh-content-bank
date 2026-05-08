@@ -104,7 +104,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ items, onCardClick, onNewC
             </div>
 
             {/* Column Content */}
-            <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2 min-h-[200px]">
+            <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2 min-h-[300px] overscroll-contain touch-pan-y">
               {items.filter(i => i.status === status).map((item) => (
                 <motion.div
                   key={item.id}

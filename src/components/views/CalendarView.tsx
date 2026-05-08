@@ -92,91 +92,95 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ items, onCardClick, 
         </div>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="flex-1 flex flex-col bg-white border border-mist rounded-3xl overflow-hidden shadow-sm">
-        <div className="grid grid-cols-7 border-b border-mist bg-light-grey/30">
-          {DAYS.map(d => (
-            <div key={d} className="py-6 text-center text-[10px] font-black text-ash/40 uppercase tracking-[0.3em]">
-              {d}
-            </div>
-          ))}
-        </div>
-        
-        <div className="flex-1 grid grid-cols-7 auto-rows-fr divide-x divide-y divide-mist/40">
-          {Array.from({ length: totalCells }).map((_, i) => {
-            const dayNum = i - offset + 1;
-            const isCurrentMonth = dayNum >= 1 && dayNum <= totalDays;
-            const dateStr = isCurrentMonth ? `${year}-${(month + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}` : null;
-            
-            const dayItems = dateStr ? items.filter(it => it.publish_date?.startsWith(dateStr)) : [];
-            const isToday = isCurrentMonth && 
-              dayNum === new Date().getDate() && 
-              month === new Date().getMonth() && 
-              year === new Date().getFullYear();
-
-            return (
-              <div 
-                key={i} 
-                onDragOver={handleDragOver}
-                onDrop={(e) => isCurrentMonth && dateStr && handleDrop(e, dateStr)}
-                className={cn(
-                  "p-4 min-h-[140px] transition-all relative flex flex-col group",
-                  !isCurrentMonth ? "bg-light-grey/20" : "hover:bg-cyan/[0.02]"
-                )}
-              >
-                {isCurrentMonth && (
-                  <>
-                    <div className="flex justify-between items-start mb-4">
-                      <span className={cn(
-                        "text-[18px] font-display font-bold transition-all",
-                        isToday ? "text-cyan" : "text-ash/30 group-hover:text-ash/60"
-                      )}>
-                        {dayNum.toString().padStart(2, '0')}
-                      </span>
-                      {isToday && (
-                        <span className="text-[8px] font-black text-cyan uppercase tracking-tighter bg-cyan/10 px-2 py-0.5 rounded-full">
-                          Today
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="space-y-3 overflow-y-auto custom-scrollbar-mini pr-1">
-                      {dayItems.map(it => (
-                        <div 
-                          key={it.id} 
-                          draggable={true}
-                          onDragStart={(e) => {
-                            e.dataTransfer.setData('itemId', it.id);
-                            e.dataTransfer.effectAllowed = 'move';
-                          }}
-                          onClick={() => onCardClick(it.id)}
-                          className="p-3 bg-white border border-mist rounded-lg cursor-pointer hover:border-cyan/40 hover:shadow-lg hover:shadow-dark/5 transition-all group/item"
-                        >
-                          <div className="flex items-center gap-2 mb-1.5">
-                             <div className="w-1.5 h-1.5 rounded-full bg-cyan" />
-                             <span className="text-[9px] font-bold text-ash/40 uppercase tracking-widest truncate">{it.content_type}</span>
-                          </div>
-                          <div className="text-[13px] font-bold text-dark leading-tight group-hover/item:text-cyan transition-colors truncate">
-                            {it.title}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {isCurrentMonth && dayItems.length === 0 && (
-                      <button 
-                        onClick={() => onNewContent(dateStr || undefined)}
-                        className="mt-auto opacity-0 group-hover:opacity-100 flex items-center gap-2 text-[10px] font-bold text-cyan/60 hover:text-cyan transition-all"
-                      >
-                         <Plus size={12} />
-                         <span>Add</span>
-                      </button>
-                    )}
-                  </>
-                )}
+      {/* Calendar Grid Container */}
+      <div className="flex-1 min-h-[600px] overflow-x-auto custom-scrollbar pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="min-w-[800px] md:min-w-full flex flex-col bg-white border border-mist rounded-3xl overflow-hidden shadow-sm h-full">
+          <div className="grid grid-cols-7 border-b border-mist bg-light-grey/30 sticky top-0 z-20">
+            {DAYS.map(d => (
+              <div key={d} className="py-6 text-center text-[10px] font-black text-ash/40 uppercase tracking-[0.3em]">
+                {d}
               </div>
-            );
-          })}
+            ))}
+          </div>
+          
+          <div className="flex-1 grid grid-cols-7 auto-rows-fr divide-x divide-y divide-mist/40 bg-mist/5">
+            {Array.from({ length: totalCells }).map((_, i) => {
+              const dayNum = i - offset + 1;
+              const isCurrentMonth = dayNum >= 1 && dayNum <= totalDays;
+              const dateStr = isCurrentMonth ? `${year}-${(month + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}` : null;
+              
+              const dayItems = dateStr ? items.filter(it => it.publish_date?.startsWith(dateStr)) : [];
+              const isToday = isCurrentMonth && 
+                dayNum === new Date().getDate() && 
+                month === new Date().getMonth() && 
+                year === new Date().getFullYear();
+
+              return (
+                <div 
+                  key={i} 
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => isCurrentMonth && dateStr && handleDrop(e, dateStr)}
+                  className={cn(
+                    "p-3 min-h-[160px] md:min-h-[140px] transition-all relative flex flex-col group bg-white",
+                    !isCurrentMonth && "bg-light-grey/20 opacity-40 grayscale pointer-events-none"
+                  )}
+                >
+                  {isCurrentMonth && (
+                    <>
+                      <div className="flex justify-between items-start mb-4">
+                        <span className={cn(
+                          "text-[18px] font-display font-bold transition-all",
+                          isToday ? "text-cyan" : "text-ash/30 group-hover:text-ash/60"
+                        )}>
+                          {dayNum.toString().padStart(2, '0')}
+                        </span>
+                        {isToday && (
+                          <span className="text-[8px] font-black text-cyan uppercase tracking-tighter bg-cyan/10 px-2 py-0.5 rounded-full">
+                            Today
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex-1 space-y-2.5 overflow-y-auto overscroll-contain custom-scrollbar-mini pr-1 pb-8">
+                        {dayItems.map(it => (
+                          <div 
+                            key={it.id} 
+                            draggable={true}
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData('itemId', it.id);
+                              e.dataTransfer.effectAllowed = 'move';
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onCardClick(it.id);
+                            }}
+                            className="p-2.5 bg-white border border-mist rounded-xl cursor-pointer hover:border-cyan/40 hover:shadow-xl hover:shadow-dark/5 transition-all group/item active:scale-[0.98]"
+                          >
+                            <div className="flex items-center gap-2 mb-1.5">
+                               <div className="w-1 h-1 rounded-full bg-cyan" />
+                               <span className="text-[8px] font-bold text-ash/40 uppercase tracking-widest truncate">{it.content_type}</span>
+                            </div>
+                            <div className="text-[11px] font-bold text-dark leading-tight group-hover/item:text-cyan transition-colors line-clamp-2">
+                              {it.title}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {isCurrentMonth && (
+                        <button 
+                          onClick={() => onNewContent(dateStr || undefined)}
+                          className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-light-grey text-ash/40 hover:bg-dark hover:text-white transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 z-10"
+                        >
+                           <Plus size={14} />
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

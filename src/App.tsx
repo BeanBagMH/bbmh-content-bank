@@ -157,7 +157,7 @@ export default function App() {
           setFilter={setFilter}
         />
 
-        <section className="flex-1 overflow-auto p-6 lg:p-12 pb-32 lg:pb-12 custom-scrollbar">
+        <section className="flex-1 overflow-x-hidden overflow-y-auto p-6 lg:p-12 pb-40 lg:pb-12 custom-scrollbar overscroll-none">
           <AnimatePresence mode="wait">
             <motion.div
               key={view}

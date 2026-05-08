@@ -25,7 +25,52 @@ export const ListView: React.FC<ListViewProps> = ({ items, onCardClick }) => {
 
   return (
     <div className="bg-white border border-mist rounded-[32px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all duration-500">
-      <div className="overflow-x-auto">
+      {/* Mobile Card View */}
+      <div className="md:hidden divide-y divide-mist/30">
+        {items.map((item) => (
+          <div 
+            key={item.id}
+            onClick={() => onCardClick(item.id)}
+            className="p-6 bg-white active:bg-light-grey/20 transition-all flex flex-col gap-4"
+          >
+            <div className="flex justify-between items-start">
+               <div>
+                 <h4 className="text-[15px] font-display font-bold text-dark">{item.title}</h4>
+                 <div className="flex items-center gap-2 mt-1">
+                   <Badge variant={item.content_type} className="text-[8px] px-1.5 py-0.5">{item.content_type}</Badge>
+                   <span className="text-[9px] font-mono text-ash/30">#{item.id.slice(0, 4)}</span>
+                 </div>
+               </div>
+               <div className="relative" onClick={e => e.stopPropagation()}>
+                 <select 
+                    value={item.status}
+                    onChange={(e) => handleStatusChange(item.id, e)}
+                    className="appearance-none bg-mist/5 border border-mist/20 rounded-lg px-3 py-1.5 pr-8 text-[9px] font-black text-ash outline-none"
+                  >
+                    {['Raw Idea', 'Selected', 'Research', 'Scripting', 'Design', 'Editing', 'Review', 'Scheduled', 'Published'].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-ash/40" />
+               </div>
+            </div>
+            <div className="flex items-center justify-between">
+               <div className="flex items-center gap-2 text-ash/40">
+                 <CalendarIcon size={12} />
+                 <span className="text-[10px] font-mono">
+                    {item.publish_date ? new Date(item.publish_date).toLocaleDateString() : 'Unset'}
+                 </span>
+               </div>
+               {item.cluster && (
+                 <span className="text-[9px] font-black text-cyan/60 uppercase tracking-widest">{item.cluster}</span>
+               )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-light-grey/20 border-b border-mist/40">
