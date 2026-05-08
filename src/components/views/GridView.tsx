@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MoreHorizontal, Calendar, Type, Globe, Tag } from 'lucide-react';
+import { MoreHorizontal, Calendar, Type, Globe, Tag, Maximize2 } from 'lucide-react';
 import type { ContentItem } from '../../types';
 import { Badge } from '../common/Badge';
 
@@ -42,14 +42,34 @@ export const GridView: React.FC<GridViewProps> = ({ items, onCardClick }) => {
             {item.hook || item.notes || "No strategy snippet provided yet..."}
           </p>
 
+          <div className="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 rounded-3xl">
+             <button 
+               onClick={(e) => {
+                 e.stopPropagation();
+                 onCardClick(item.id);
+               }}
+               className="p-3 bg-white rounded-full text-dark hover:bg-cyan hover:text-white transition-all"
+             >
+                <Maximize2 size={18} />
+             </button>
+             <button 
+               onClick={(e) => {
+                 e.stopPropagation();
+                 onCardClick(item.id);
+               }}
+               className="p-3 bg-white rounded-full text-dark hover:bg-cyan hover:text-white transition-all"
+               title="Schedule Piece"
+             >
+                <Calendar size={18} />
+             </button>
+          </div>
+
           {/* Footer Metadata */}
           <div className="mt-auto pt-6 border-t border-mist/40 space-y-4">
              {item.status === 'Raw Idea' ? (
                <button 
                  onClick={(e) => {
                    e.stopPropagation();
-                   // In a real app, we'd call updateItem here. 
-                   // For now, clicking the card opens the detail panel where they can change status.
                    onCardClick(item.id);
                  }}
                  className="w-full py-3 bg-dark text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-cyan transition-all"

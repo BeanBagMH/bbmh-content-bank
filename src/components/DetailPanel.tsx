@@ -12,7 +12,8 @@ import {
   Palette,
   Share2,
   BarChart3,
-  CheckCircle2
+  CheckCircle2,
+  Download
 } from 'lucide-react';
 import { useContentStore } from '../hooks/useContentStore';
 import { cn } from './common/Badge';
@@ -174,13 +175,22 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose })
              )}
 
              {activeTab === 'writing' && (
-               <div className="space-y-10">
-                  <EditorSection label="Hook / Headline" value={item?.hook} onChange={(v: string) => handleUpdate({ hook: v })} placeholder="The opening signal..." />
-                  <EditorSection label="Script / Body" value={item?.script} onChange={(v: string) => handleUpdate({ script: v })} placeholder="The core message..." minHeight="300px" />
-                  <EditorSection label="Caption" value={item?.caption} onChange={(v: string) => handleUpdate({ caption: v })} placeholder="For the platforms..." />
-                  <EditorSection label="Call to Action" value={item?.cta} onChange={(v: string) => handleUpdate({ cta: v })} placeholder="The strategic move..." />
-               </div>
-             )}
+                <div className="space-y-10">
+                   <div className="flex justify-end">
+                      <button 
+                        onClick={() => window.print()}
+                        className="flex items-center gap-2 px-6 py-3 bg-light-grey rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-dark hover:text-white transition-all shadow-sm"
+                      >
+                         <Download size={14} />
+                         <span>Export as PDF</span>
+                      </button>
+                   </div>
+                   <EditorSection label="Hook / Headline" value={item?.hook} onChange={(v: string) => handleUpdate({ hook: v })} placeholder="The opening signal..." />
+                   <EditorSection label="Script / Body" value={item?.script} onChange={(v: string) => handleUpdate({ script: v })} placeholder="The core message..." minHeight="300px" />
+                   <EditorSection label="Caption" value={item?.caption} onChange={(v: string) => handleUpdate({ caption: v })} placeholder="For the platforms..." />
+                   <EditorSection label="Call to Action" value={item?.cta} onChange={(v: string) => handleUpdate({ cta: v })} placeholder="The strategic move..." />
+                </div>
+              )}
 
              {activeTab === 'creative' && (
                <div className="space-y-10">

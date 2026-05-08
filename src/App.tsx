@@ -42,6 +42,7 @@ export default function App() {
   
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [isNewContentModalOpen, setIsNewContentModalOpen] = React.useState(false);
+  const [prefilledDate, setPrefilledDate] = React.useState<string | null>(null);
   const [isQuickIdeaModalOpen, setIsQuickIdeaModalOpen] = React.useState(false);
   const [session, setSession] = React.useState<any>(null);
   const [authLoading, setAuthLoading] = React.useState(true);
@@ -139,11 +140,29 @@ export default function App() {
                   {filter.subView === 'grid' && <GridView items={filteredItems} onCardClick={setSelectedId} />}
                   {filter.subView === 'board' && <BoardView items={filteredItems} onCardClick={setSelectedId} />}
                   {filter.subView === 'list' && <ListView items={filteredItems} onCardClick={setSelectedId} />}
-                  {filter.subView === 'calendar' && <CalendarView items={filteredItems} onCardClick={setSelectedId} onNewContent={() => setIsNewContentModalOpen(true)} />}
+                  {filter.subView === 'calendar' && (
+                    <CalendarView 
+                      items={filteredItems} 
+                      onCardClick={setSelectedId} 
+                      onNewContent={(date?: string) => {
+                        setPrefilledDate(date || null);
+                        setIsNewContentModalOpen(true);
+                      }} 
+                    />
+                  )}
                 </>
               )}
 
-              {view === 'calendar' && <CalendarView items={items} onCardClick={setSelectedId} onNewContent={() => setIsNewContentModalOpen(true)} />}
+              {view === 'calendar' && (
+                <CalendarView 
+                  items={items} 
+                  onCardClick={setSelectedId} 
+                  onNewContent={(date?: string) => {
+                    setPrefilledDate(date || null);
+                    setIsNewContentModalOpen(true);
+                  }} 
+                />
+              )}
 
               {/* Ideas Vault */}
               {view === 'ideas-vault' && (
@@ -177,7 +196,11 @@ export default function App() {
 
       <NewContentModal 
         isOpen={isNewContentModalOpen} 
-        onClose={() => setIsNewContentModalOpen(false)} 
+        onClose={() => {
+          setIsNewContentModalOpen(false);
+          setPrefilledDate(null);
+        }}
+        prefilledDate={prefilledDate}
       />
 
       <QuickIdeaModal 

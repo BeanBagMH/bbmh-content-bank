@@ -11,6 +11,7 @@ export function useContentStore() {
   const [initialized, setInitialized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentProfile, setCurrentProfile] = useState<any>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -26,6 +27,10 @@ export function useContentStore() {
       setIdeas(ideasData);
       setCampaigns(campaignsData);
       setThumbnails(thumbnailsData);
+      
+      // Fetch current profile (mocking with a default email for now or using auth if available)
+      const profile = await db.getProfile('murphypatel11@gmail.com');
+      setCurrentProfile(profile);
       
       setInitialized(true);
       setLoading(false);
@@ -91,6 +96,39 @@ export function useContentStore() {
     }
   };
 
+  const addCampaign = async (campaign: Partial<Campaign>) => {
+    try {
+      const newCampaign = await db.addCampaign(campaign);
+      setCampaigns(prev => [newCampaign, ...prev]);
+      return newCampaign;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  const addThumbnail = async (thumbnail: Partial<Thumbnail>) => {
+    try {
+      const newThumbnail = await db.addThumbnail(thumbnail);
+      setThumbnails(prev => [newThumbnail, ...prev]);
+      return newThumbnail;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  const updateProfile = async (id: string, updates: any) => {
+    try {
+      const updatedProfile = await db.updateProfile(id, updates);
+      setCurrentProfile(updatedProfile);
+      return updatedProfile;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   return {
     items,
     ideas,
@@ -101,6 +139,10 @@ export function useContentStore() {
     deleteItem,
     duplicateItem,
     addIdea,
+    addCampaign,
+    addThumbnail,
+    updateProfile,
+    currentProfile,
     initialized,
     loading,
     error,

@@ -10,7 +10,7 @@ import { cn } from '../common/Badge';
 interface CalendarViewProps {
   items: ContentItem[];
   onCardClick: (id: string) => void;
-  onNewContent: () => void;
+  onNewContent: (date?: string) => void;
 }
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -67,7 +67,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ items, onCardClick, 
           </div>
           
           <button 
-            onClick={onNewContent}
+            onClick={() => onNewContent()}
             className="bg-dark text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-cyan transition-all shadow-lg shadow-dark/5"
           >
             <Plus size={18} />
@@ -142,7 +142,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ items, onCardClick, 
 
                     {isCurrentMonth && dayItems.length === 0 && (
                       <button 
-                        onClick={onNewContent}
+                        onClick={() => onNewContent(dateStr || undefined)}
                         className="mt-auto opacity-0 group-hover:opacity-100 flex items-center gap-2 text-[10px] font-bold text-cyan/60 hover:text-cyan transition-all"
                       >
                          <Plus size={12} />

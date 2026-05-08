@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Image as ImageIcon, Plus, Maximize2, Download } from 'lucide-react';
 import type { Thumbnail, ContentItem } from '../../types';
+import { useContentStore } from '../../hooks/useContentStore';
 
 interface ThumbnailBankViewProps {
   thumbnails: Thumbnail[];
@@ -9,6 +10,28 @@ interface ThumbnailBankViewProps {
 }
 
 export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails, items }) => {
+  const { addThumbnail } = useContentStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // In a real app, you'd upload to Supabase Storage here.
+      // For now, we'll create a mockup entry.
+      try {
+        await addThumbnail({
+          title: file.name,
+          status: 'Draft',
+          headline: 'New Hook Concept',
+          visual_description: 'Uploaded from device'
+        });
+        alert('Asset added to bank!');
+      } catch (err) {
+        alert('Failed to add asset');
+      }
+    }
+  };
+
   return (
     <div className="space-y-12">
       <div className="flex items-end justify-between">
@@ -16,7 +39,19 @@ export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails
            <h2 className="text-5xl font-display font-bold text-dark tracking-tighter mb-4">Thumbnail Bank</h2>
            <p className="text-ash/60 text-[11px] font-bold uppercase tracking-[0.4em]">Visual Hook Repository & A/B Testing</p>
         </div>
-        <button className="bg-dark text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-cyan transition-all shadow-lg shadow-dark/5">
+        
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          className="hidden" 
+          accept="image/*"
+          onChange={handleFileSelect}
+        />
+        
+        <button 
+          onClick={() => fileInputRef.current?.click()}
+          className="bg-dark text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-cyan transition-all shadow-lg shadow-dark/5"
+        >
           <Plus size={18} />
           <span className="text-[11px] font-bold uppercase tracking-widest">Add Asset</span>
         </button>

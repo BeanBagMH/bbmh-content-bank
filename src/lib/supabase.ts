@@ -102,6 +102,16 @@ export const db = {
     return data as Campaign[];
   },
 
+  async addCampaign(campaign: Partial<Campaign>) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('campaigns')
+      .insert([campaign])
+      .select();
+    if (error) throw error;
+    return data[0] as Campaign;
+  },
+
   // --- Thumbnails ---
   async getThumbnails() {
     if (!supabase) return [];
@@ -111,5 +121,38 @@ export const db = {
       .order('created_at', { ascending: false });
     if (error) throw error;
     return data as Thumbnail[];
+  },
+
+  async addThumbnail(thumbnail: Partial<Thumbnail>) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('thumbnails')
+      .insert([thumbnail])
+      .select();
+    if (error) throw error;
+    return data[0] as Thumbnail;
+  },
+
+  // --- Profiles (using team_members) ---
+  async getProfile(email: string) {
+    if (!supabase) return null;
+    const { data, error } = await supabase
+      .from('team_members')
+      .select('*')
+      .eq('email', email)
+      .single();
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  },
+
+  async updateProfile(id: string, updates: any) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('team_members')
+      .update(updates)
+      .eq('id', id)
+      .select();
+    if (error) throw error;
+    return data[0];
   }
 };

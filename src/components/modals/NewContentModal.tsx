@@ -7,9 +7,10 @@ import type { ContentType, Platform, ContentCluster, Priority, ContentStatus } f
 interface NewContentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  prefilledDate?: string | null;
 }
 
-export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClose }) => {
+export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClose, prefilledDate }) => {
   const { addItem } = useContentStore();
   const [formData, setFormData] = React.useState({
     title: '',
@@ -18,7 +19,7 @@ export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClos
     content_cluster: 'General' as ContentCluster,
     status: 'Raw Idea' as ContentStatus,
     priority: 'Medium' as Priority,
-    publish_date: '',
+    publish_date: prefilledDate || '',
     hook: '',
     script: '',
     caption: '',
@@ -27,6 +28,12 @@ export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClos
     reference_url: '',
     asset_link: ''
   });
+
+  React.useEffect(() => {
+    if (prefilledDate) {
+      setFormData(prev => ({ ...prev, publish_date: prefilledDate }));
+    }
+  }, [prefilledDate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

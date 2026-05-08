@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Flag, Plus, Users, Layout, ArrowUpRight } from 'lucide-react';
 import type { Campaign, ContentItem } from '../../types';
 import { cn } from '../common/Badge';
+import { useContentStore } from '../../hooks/useContentStore';
 
 interface CampaignsViewProps {
   campaigns: Campaign[];
@@ -10,6 +11,26 @@ interface CampaignsViewProps {
 }
 
 export const CampaignsView: React.FC<CampaignsViewProps> = ({ campaigns, items }) => {
+  const { addCampaign } = useContentStore();
+
+  const handleNewCluster = async () => {
+    const name = prompt('Enter Cluster Name:');
+    if (!name) return;
+    const objective = prompt('Enter Cluster Objective:');
+    
+    try {
+      await addCampaign({
+        name,
+        objective: objective || '',
+        status: 'Planning',
+        start_date: new Date().toISOString().split('T')[0]
+      });
+      alert('Cluster created!');
+    } catch (err) {
+      alert('Failed to create cluster');
+    }
+  };
+
   return (
     <div className="space-y-12">
       <div className="flex items-end justify-between">
@@ -17,7 +38,10 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({ campaigns, items }
            <h2 className="text-5xl font-display font-bold text-dark tracking-tighter mb-4">Strategic Clusters</h2>
            <p className="text-ash/60 text-[11px] font-bold uppercase tracking-[0.4em]">High-Level Campaign Management</p>
         </div>
-        <button className="bg-dark text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-cyan transition-all shadow-lg shadow-dark/5">
+        <button 
+          onClick={handleNewCluster}
+          className="bg-dark text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-cyan transition-all shadow-lg shadow-dark/5"
+        >
           <Plus size={18} />
           <span className="text-[11px] font-bold uppercase tracking-widest">New Cluster</span>
         </button>

@@ -47,8 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, itemCoun
           <div>
             <h1 className="text-xl font-display font-bold tracking-tight text-dark">BBMh</h1>
             <div className="flex items-center gap-2">
-              <p className="text-[10px] font-bold text-ash uppercase tracking-[0.2em] opacity-60">Content OS</p>
-              <span className="text-[8px] bg-cyan/10 text-cyan px-1.5 py-0.5 rounded font-black uppercase tracking-tighter">V3.1.0-ULTIMATE</span>
+              <span className="text-[8px] bg-cyan/10 text-cyan px-1.5 py-0.5 rounded font-black uppercase tracking-tighter">V3.1.6-ACTIVATED</span>
             </div>
           </div>
         </div>
@@ -108,9 +107,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, itemCoun
             <LogOut size={16} />
           </button>
         </div>
-        
         <div className="flex items-center justify-between px-2">
-           <span className="text-[9px] font-bold text-ash/30 uppercase tracking-widest">v3.0.0 Stable</span>
+           <span className="text-[9px] font-bold text-ash/30 uppercase tracking-widest">V3.1.6-ACTIVATED</span>
            <div className="flex gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-cyan animate-pulse" />
               <span className="text-[9px] font-bold text-cyan uppercase tracking-widest">Live Sync</span>
