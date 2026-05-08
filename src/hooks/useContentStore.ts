@@ -45,7 +45,9 @@ export function useContentStore() {
   useEffect(() => {
     fetchData();
 
-    // --- Realtime Subscription ---
+    // --- Realtime Subscription Safety Shield ---
+    if (!supabase) return;
+
     const channel = supabase
       .channel('schema-db-changes')
       .on(
