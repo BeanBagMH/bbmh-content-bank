@@ -223,11 +223,13 @@ export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClos
                </button>
                <button 
                  onClick={handleSubmit}
-                 disabled={!formData.title}
+                 disabled={!formData.title || submitting}
                  className="bg-dark text-white px-12 py-4 rounded-xl flex items-center gap-3 hover:bg-cyan transition-all shadow-lg shadow-dark/10 disabled:opacity-20 disabled:cursor-not-allowed"
                >
                  <Plus size={18} />
-                 <span className="text-[11px] font-bold uppercase tracking-[0.2em]">Deploy Strategy</span>
+                 <span className="text-[11px] font-bold uppercase tracking-[0.2em]">
+                   {submitting ? 'Deploying...' : 'Deploy Strategy'}
+                 </span>
                </button>
             </div>
           </motion.div>

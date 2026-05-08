@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Clock, AlertCircle, PieChart, CheckCircle2, Layout, Calendar } from 'lucide-react';
+import { TrendingUp, Clock, AlertCircle, PieChart, CheckCircle2, Calendar } from 'lucide-react';
 import { EmptyState } from '../common/EmptyState';
 import { cn } from '../common/Badge';
 import type { ContentItem } from '../../types';

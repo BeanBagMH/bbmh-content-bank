@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, MoreVertical, Clock, MessageSquare, Link as LinkIcon, Layout } from 'lucide-react';
+import { Plus, Clock, Layout } from 'lucide-react';
+import { cn } from '../common/Badge';
 import type { ContentItem, ContentStatus } from '../../types';
 import { Badge } from '../common/Badge';
 import { useContentStore } from '../../hooks/useContentStore';

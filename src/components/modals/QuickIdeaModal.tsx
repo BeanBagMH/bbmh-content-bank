@@ -27,8 +27,8 @@ export const QuickIdeaModal: React.FC<QuickIdeaModalProps> = ({ isOpen, onClose 
       await addIdea({
         title,
         note,
-        platform: platform || 'Multi-platform',
-        cluster: cluster || 'General',
+        platform,
+        cluster,
         archived: false
       });
       setTitle('');
@@ -55,42 +55,49 @@ export const QuickIdeaModal: React.FC<QuickIdeaModalProps> = ({ isOpen, onClose 
           />
           
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
             className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden"
           >
-            <div className="p-8 border-b border-mist bg-yellow-50/50 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Lightbulb size={20} className="text-yellow-500" />
-                <h2 className="text-lg font-display font-bold text-dark">Quick Brain Dump</h2>
+            {/* Header */}
+            <div className="p-8 border-b border-mist flex items-center justify-between bg-yellow-50/30">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center text-white">
+                   <Lightbulb size={20} />
+                </div>
+                <div>
+                   <h2 className="text-xl font-display font-bold text-dark">Quick Idea</h2>
+                   <p className="text-[10px] font-bold text-ash/40 uppercase tracking-widest">Capture the spark</p>
+                </div>
               </div>
               <button onClick={onClose} className="p-2 hover:bg-mist rounded-lg transition-all text-ash">
                 <X size={20} />
               </button>
             </div>
 
+            {/* Form */}
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-ash uppercase tracking-widest">The Core Idea</label>
+                  <label className="text-[10px] font-black text-ash uppercase tracking-widest">The Concept</label>
                   <input 
                     autoFocus
                     required
                     type="text" 
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Briefly describe the spark..."
-                    className="w-full text-xl font-bold text-dark border-none outline-none bg-transparent placeholder:text-ash/20"
+                    placeholder="Briefly state the idea..."
+                    className="w-full text-2xl font-display font-bold text-dark border-none outline-none bg-transparent placeholder:text-ash/10"
                   />
                </div>
 
                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-ash uppercase tracking-widest">Rough Notes</label>
+                  <label className="text-[10px] font-black text-ash uppercase tracking-widest">Extra Context</label>
                   <textarea 
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder="Any quick details or context..."
-                    className="w-full h-32 bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[14px] font-medium outline-none focus:border-yellow-500 focus:bg-white transition-all resize-none"
+                    placeholder="Add details, hook ideas, or references..."
+                    className="w-full bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-medium outline-none focus:border-yellow-400 focus:bg-white transition-all h-32 resize-none"
                   />
                </div>
 
@@ -119,11 +126,13 @@ export const QuickIdeaModal: React.FC<QuickIdeaModalProps> = ({ isOpen, onClose 
 
                <button 
                  type="submit"
-                 disabled={!title}
+                 disabled={!title || isSubmitting}
                  className="w-full bg-dark text-white py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-yellow-600 transition-all shadow-lg shadow-dark/10 disabled:opacity-20"
                >
                  <Send size={18} />
-                 <span className="text-[11px] font-bold uppercase tracking-widest">Save to Vault</span>
+                 <span className="text-[11px] font-bold uppercase tracking-widest">
+                   {isSubmitting ? 'Saving Idea...' : 'Save to Vault'}
+                 </span>
                </button>
             </form>
           </motion.div>

@@ -1,23 +1,20 @@
 import * as React from 'react';
 import { MobileNav } from './components/layout/MobileNav';
 import { ToastContainer } from './components/common/ToastContainer';
-import { toast } from './hooks/useToast';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useContentStore } from './hooks/useContentStore';
 import { Sidebar } from './components/layout/Sidebar';
 import { Topbar } from './components/layout/Topbar';
 import { DashboardView } from './components/views/DashboardView';
 import { BoardView } from './components/views/BoardView';
+import { ContentBankView } from './components/views/ContentBankView';
 import { ScriptsView } from './components/views/ScriptsView';
-import { ListView } from './components/views/ListView';
 import { CalendarView } from './components/views/CalendarView';
-import { GridView } from './components/views/GridView';
 import { CampaignsView } from './components/views/CampaignsView';
 import { ThumbnailBankView } from './components/views/ThumbnailBankView';
 import { PerformanceView } from './components/views/PerformanceView';
 import { SettingsView } from './components/views/SettingsView';
 import { IdeasVaultView } from './components/views/IdeasVaultView';
-import { DualView } from './components/views/DualView';
 import { BottomNav } from './components/layout/BottomNav';
 import { DetailPanel } from './components/DetailPanel';
 import { NewContentModal } from './components/modals/NewContentModal';
@@ -184,7 +181,7 @@ export default function App() {
                   items={filteredItems} 
                   filter={filter} 
                   setFilter={setFilter}
-                  onCardClick={(id) => openDetail(id)}
+                  onCardClick={(id: string) => openDetail(id)}
                   onAddNew={() => setIsNewContentModalOpen(true)}
                 />
               )}
@@ -198,9 +195,9 @@ export default function App() {
               {view === 'calendar' && (
                 <CalendarView 
                   items={items} 
-                  onCardClick={(id) => openDetail(id)} 
-                  onDateClick={(date) => {
-                    setPrefilledDate(date);
+                  onCardClick={(id: string) => openDetail(id)} 
+                  onNewContent={(date?: string) => {
+                    setPrefilledDate(date || null);
                     setIsNewContentModalOpen(true);
                   }}
                 />

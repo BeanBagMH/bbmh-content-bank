@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useToasts, ToastType } from '../../hooks/useToast';
-import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
+import { useToasts } from '../../hooks/useToast';
+import type { ToastType } from '../../hooks/useToast';
+import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import { cn } from '../common/Badge';
 
 export const ToastContainer: React.FC = () => {
