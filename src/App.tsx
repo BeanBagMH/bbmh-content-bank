@@ -235,7 +235,6 @@ export default function App() {
         initialTab={detailTab}
         onClose={() => {
           setSelectedId(null);
-          setIsDetailOpen(false);
         }} 
       />
 
