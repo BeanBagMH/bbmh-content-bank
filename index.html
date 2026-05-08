@@ -20,6 +20,9 @@
     </style>
     <script>
       console.log('BBMh: HTML script running');
+      window.onerror = function(msg, url, line, col, error) {
+        document.body.innerHTML = '<div style="color:red; padding:40px; font-family:sans-serif;"><h1>CRITICAL ERROR</h1><p>' + msg + '</p><p>' + url + ' L:' + line + '</p></div>';
+      };
       // Simple visual confirmation
       window.addEventListener('DOMContentLoaded', () => {
         document.body.style.backgroundColor = '#fcfaf9';
