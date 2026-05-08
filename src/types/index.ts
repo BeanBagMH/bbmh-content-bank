@@ -83,6 +83,8 @@ export interface ContentItem {
   leads: number;
   
   campaign_id: string | null;
+  ig_id: string | null; // For Meta Graph API linking
+  yt_id: string | null; // For YouTube Analytics API linking
   archived: boolean;
   created_at: string;
   updated_at: string;

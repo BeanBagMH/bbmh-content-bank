@@ -7,10 +7,10 @@ import {
   Settings
 } from 'lucide-react';
 import { cn } from '../common/Badge';
+import { Link } from 'react-router-dom';
 
 interface BottomNavProps {
   currentView: string;
-  setView: (view: string) => void;
 }
 
 const BOTTOM_NAV_ITEMS = [
@@ -21,7 +21,7 @@ const BOTTOM_NAV_ITEMS = [
   { id: 'settings', label: 'Setup', icon: Settings },
 ];
 
-export const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {
+export const BottomNav: React.FC<BottomNavProps> = ({ currentView }) => {
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-mist z-50 px-6 py-2 pb-8 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
       {BOTTOM_NAV_ITEMS.map((item) => {
@@ -29,9 +29,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) =>
         const isActive = currentView === item.id;
         
         return (
-          <button
+          <Link
             key={item.id}
-            onClick={() => setView(item.id)}
+            to={item.id === 'dashboard' ? '/' : `/${item.id}`}
             className="flex flex-col items-center gap-1.5 p-2 transition-all duration-300 relative group"
           >
             <div className={cn(
@@ -50,7 +50,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) =>
             {isActive && (
               <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-cyan" />
             )}
-          </button>
+          </Link>
         );
       })}
     </nav>

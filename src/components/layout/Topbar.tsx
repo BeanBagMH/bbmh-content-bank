@@ -6,7 +6,9 @@ import {
   LayoutGrid,
   Columns,
   List,
-  CalendarDays
+  CalendarDays,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { cn } from '../common/Badge';
 
@@ -17,6 +19,8 @@ interface TopbarProps {
   onQuickIdea: () => void;
   filter: any;
   setFilter: (f: any) => void;
+  isDarkMode: boolean;
+  onToggleTheme: () => void;
 }
 
 export const Topbar: React.FC<TopbarProps> = ({ 
@@ -24,7 +28,9 @@ export const Topbar: React.FC<TopbarProps> = ({
   onNewContent, 
   onQuickIdea,
   filter,
-  setFilter
+  setFilter,
+  isDarkMode,
+  onToggleTheme
 }) => {
   const isContentBank = currentView === 'content-bank';
 
@@ -89,6 +95,15 @@ export const Topbar: React.FC<TopbarProps> = ({
         </button>
 
         <div className="hidden lg:block h-6 w-px bg-mist mx-2" />
+
+        {/* Theme Toggle */}
+        <button 
+          onClick={onToggleTheme}
+          className="p-3 bg-light-grey rounded-xl text-ash hover:text-dark transition-all hover:shadow-md"
+          title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        >
+          {isDarkMode ? <Sun size={18} className="text-yellow-500" /> : <Moon size={18} />}
+        </button>
 
         <button 
           onClick={onNewContent}

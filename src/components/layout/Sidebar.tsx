@@ -13,10 +13,10 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { cn } from '../common/Badge';
+import { Link } from 'react-router-dom';
 
 interface SidebarProps {
   currentView: string;
-  setView: (view: any) => void;
   itemCounts: { [key: string]: number };
 }
 
@@ -33,7 +33,7 @@ const NAV_ITEMS = [
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, itemCounts }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, itemCounts }) => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
@@ -62,9 +62,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, itemCoun
           const isActive = currentView === item.id;
           
           return (
-            <button
+            <Link
               key={item.id}
-              onClick={() => setView(item.id)}
+              to={item.id === 'dashboard' ? '/' : `/${item.id}`}
               className={cn(
                 "w-full flex items-center justify-between p-4 rounded-lg transition-all duration-300 group",
                 isActive 
@@ -85,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, itemCoun
                   {itemCounts[item.id].toString().padStart(2, '0')}
                 </span>
               )}
-            </button>
+            </Link>
           );
         })}
       </nav>

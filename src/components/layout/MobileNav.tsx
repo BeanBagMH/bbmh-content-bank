@@ -7,10 +7,10 @@ import {
   Plus
 } from 'lucide-react';
 import { cn } from '../common/Badge';
+import { Link } from 'react-router-dom';
 
 interface MobileNavProps {
   currentView: string;
-  setView: (view: any) => void;
   onAddClick: () => void;
 }
 
@@ -22,7 +22,7 @@ const NAV_ITEMS = [
   { id: 'ideas-vault', label: 'Ideas', icon: Lightbulb },
 ];
 
-export const MobileNav: React.FC<MobileNavProps> = ({ currentView, setView, onAddClick }) => {
+export const MobileNav: React.FC<MobileNavProps> = ({ currentView, onAddClick }) => {
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-mist px-6 py-3 flex items-center justify-between z-40 pb-safe">
       {NAV_ITEMS.map((item) => {
@@ -42,9 +42,9 @@ export const MobileNav: React.FC<MobileNavProps> = ({ currentView, setView, onAd
         }
 
         return (
-          <button
+          <Link
             key={item.id}
-            onClick={() => setView(item.id)}
+            to={item.id === 'dashboard' ? '/' : `/${item.id}`}
             className="flex flex-col items-center gap-1 min-w-[50px]"
           >
             <Icon 
@@ -60,7 +60,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ currentView, setView, onAd
             )}>
               {item.label}
             </span>
-          </button>
+          </Link>
         );
       })}
     </div>

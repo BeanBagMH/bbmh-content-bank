@@ -6,24 +6,38 @@
 
 :root {
   /* Brand Colors */
-  --dark-grey: #252527;
-  --charcoal: #3f3f3f;
   --cyan: #1f8e8d;
   --pastel-turquoise: #9ae3d3;
-  --light-grey: #f2f2f2;
-  --white: #ffffff;
-  
-  /* UI Tokens */
-  --bg: #fcfaf9;
-  --mist: #e2e2e2;
-  --ash: #666666;
   --magenta: #e61e6e;
-  --magenta-whisper: #fdf2f7;
+  --ig: #e1306c;
+  --yt: #ff0000;
+  
+  /* Light Theme */
+  --bg: #fcfaf9;
+  --surface: #ffffff;
+  --surface-alt: #f2f2f2;
+  --text: #252527;
+  --text-dim: #666666;
+  --text-faint: #999999;
+  --mist: #e2e2e2;
+  --border: #e2e2e2;
   
   /* Typography */
   --font-display: 'Cabinet Grotesk', 'Inter', sans-serif;
   --font-body: 'Roundo', 'Inter', sans-serif;
   --font-serif: 'Instrument Serif', serif;
+}
+
+.dark {
+  --bg: #0a0a0b;
+  --surface: #111114;
+  --surface-alt: #18181c;
+  --text: #f5f5f7;
+  --text-dim: #a1a1aa;
+  --text-faint: #3f3f46;
+  --mist: #27272a;
+  --border: #27272a;
+  --dark-grey: #f5f5f7; /* Mapping for components using hardcoded var */
 }
 
 @layer base {
@@ -34,8 +48,9 @@
   body {
     font-family: var(--font-body);
     background-color: var(--bg);
-    color: var(--dark-grey);
+    color: var(--text);
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s, color 0.3s;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -79,9 +94,14 @@
 .text-cyan { color: var(--cyan); }
 .bg-cyan { background-color: var(--cyan); }
 .text-turquoise { color: var(--pastel-turquoise); }
-.bg-dark { background-color: var(--dark-grey); }
-.text-dark { color: var(--dark-grey); }
-.border-mist { border-color: var(--mist); }
+.bg-dark { background-color: var(--text); }
+.text-dark { color: var(--text); }
+.text-ash { color: var(--text-dim); }
+.border-mist { border-color: var(--border); }
+.bg-surface { background-color: var(--surface); }
+.bg-light-grey { background-color: var(--surface-alt); }
+.text-ig { color: var(--ig); }
+.text-yt { color: var(--yt); }
 
 /* Animation Overrides */
 .animate-in {

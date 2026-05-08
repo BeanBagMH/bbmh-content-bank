@@ -2,6 +2,7 @@ import * as React from 'react';
 import { MobileNav } from './components/layout/MobileNav';
 import { ToastContainer } from './components/common/ToastContainer';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Plus } from 'lucide-react';
 import { useContentStore } from './hooks/useContentStore';
 import { Sidebar } from './components/layout/Sidebar';
 import { Topbar } from './components/layout/Topbar';
@@ -21,6 +22,9 @@ import { NewContentModal } from './components/modals/NewContentModal';
 import { QuickIdeaModal } from './components/modals/QuickIdeaModal';
 import { LoginPage } from './components/auth/LoginPage';
 import { supabase, isConfigured } from './lib/supabase';
+import { Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
 
 export default function App() {
   const { 
@@ -32,7 +36,19 @@ export default function App() {
     loading 
   } = useContentStore();
 
-  const [view, setView] = React.useState<string>('dashboard');
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  const view = React.useMemo(() => {
+    const path = location.pathname.split('/')[1];
+    if (!path) return 'dashboard';
+    return path;
+  }, [location]);
+
+  const setView = (newView: string) => {
+    navigate(newView === 'dashboard' ? '/' : `/${newView}`);
+  };
+
   const [filter, setFilter] = React.useState({ 
     search: '', 
     subView: 'grid', // grid, board, list, calendar (within Content Bank)
@@ -56,6 +72,33 @@ export default function App() {
   const [isQuickIdeaModalOpen, setIsQuickIdeaModalOpen] = React.useState(false);
   const [session, setSession] = React.useState<any>(null);
   const [authLoading, setAuthLoading] = React.useState(true);
+  
+  // Theme Engine
+  const [isDarkMode, setIsDarkMode] = React.useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
+
+  React.useEffect(() => {
+    const root = window.document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  const toggleTheme = () => setIsDarkMode(!isDarkMode);
+  
+  // Lightbox State
+  const [isLightboxOpen, setIsLightboxOpen] = React.useState(false);
+  const [lightboxImage, setLightboxImage] = React.useState<string | null>(null);
+
+  const openLightbox = (url: string) => {
+    setLightboxImage(url);
+    setIsLightboxOpen(true);
+  };
 
   React.useEffect(() => {
     // Audit bypass with extended mock data
@@ -143,7 +186,6 @@ export default function App() {
     <div className="flex h-screen bg-[#fcfaf9] overflow-hidden font-body text-dark selection:bg-cyan/20">
       <Sidebar 
         currentView={view} 
-        setView={setView}
         itemCounts={itemCounts}
       />
 
@@ -155,66 +197,64 @@ export default function App() {
           onQuickIdea={() => setIsQuickIdeaModalOpen(true)}
           filter={filter}
           setFilter={setFilter}
+          isDarkMode={isDarkMode}
+          onToggleTheme={toggleTheme}
         />
 
         <section className="flex-1 overflow-x-hidden overflow-y-auto p-6 lg:p-12 pb-40 lg:pb-12 custom-scrollbar overscroll-none">
           <AnimatePresence mode="wait">
             <motion.div
-              key={view}
+              key={location.pathname}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              {view === 'dashboard' && <DashboardView items={items} setView={setView} />}
-              
-              {view === 'planner' && (
-                <BoardView 
-                  items={filteredItems} 
-                  onCardClick={(id) => openDetail(id)}
-                  onAddNew={() => setIsNewContentModalOpen(true)}
-                />
-              )}
-
-              {view === 'content-bank' && (
-                <ContentBankView 
-                  items={filteredItems} 
-                  filter={filter} 
-                  setFilter={setFilter}
-                  onCardClick={(id: string) => openDetail(id)}
-                  onAddNew={() => setIsNewContentModalOpen(true)}
-                />
-              )}
-
-              {view === 'ideas-vault' && (
-                <IdeasVaultView 
-                  onAddIdea={() => setIsQuickIdeaModalOpen(true)} 
-                />
-              )}
-
-              {view === 'calendar' && (
-                <CalendarView 
-                  items={items} 
-                  onCardClick={(id: string) => openDetail(id)} 
-                  onNewContent={(date?: string) => {
-                    setPrefilledDate(date || null);
-                    setIsNewContentModalOpen(true);
-                  }}
-                />
-              )}
-
-              {view === 'campaigns' && <CampaignsView campaigns={campaigns} items={items} />}
-              
-              {view === 'scripts' && (
-                <ScriptsView 
-                  items={items} 
-                  onCardClick={(id) => openDetail(id, 'writing')} 
-                />
-              )}
-
-              {view === 'thumbnails' && <ThumbnailBankView thumbnails={thumbnails} items={items} />}
-              {view === 'performance' && <PerformanceView items={items} />}
-              {view === 'settings' && <SettingsView />}
+              <Routes>
+                <Route path="/" element={<DashboardView items={items} setView={setView} />} />
+                <Route path="/planner" element={
+                  <BoardView 
+                    items={filteredItems} 
+                    onCardClick={(id) => openDetail(id)}
+                    onAddNew={() => setIsNewContentModalOpen(true)}
+                  />
+                } />
+                <Route path="/content-bank" element={
+                  <ContentBankView 
+                    items={filteredItems} 
+                    filter={filter} 
+                    setFilter={setFilter}
+                    onCardClick={(id: string) => openDetail(id)}
+                    onAddNew={() => setIsNewContentModalOpen(true)}
+                  />
+                } />
+                <Route path="/ideas" element={
+                  <IdeasVaultView 
+                    onAddIdea={() => setIsQuickIdeaModalOpen(true)} 
+                  />
+                } />
+                <Route path="/calendar" element={
+                  <CalendarView 
+                    items={items} 
+                    onCardClick={(id: string) => openDetail(id)} 
+                    onNewContent={(date?: string) => {
+                      setPrefilledDate(date || null);
+                      setIsNewContentModalOpen(true);
+                    }}
+                  />
+                } />
+                <Route path="/campaigns" element={<CampaignsView campaigns={campaigns} items={items} />} />
+                <Route path="/scripts" element={
+                  <ScriptsView 
+                    items={items} 
+                    onCardClick={(id) => openDetail(id, 'writing')} 
+                  />
+                } />
+                <Route path="/thumbnails" element={<ThumbnailBankView thumbnails={thumbnails} items={items} />} />
+                <Route path="/performance" element={<PerformanceView items={items} />} />
+                <Route path="/settings" element={<SettingsView />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
             </motion.div>
           </AnimatePresence>
         </section>
@@ -222,7 +262,6 @@ export default function App() {
 
       <MobileNav 
         currentView={view} 
-        setView={setView} 
         onAddClick={() => setIsQuickIdeaModalOpen(true)} 
       />
 
@@ -232,6 +271,7 @@ export default function App() {
         onClose={() => {
           setSelectedId(null);
         }} 
+        onOpenLightbox={openLightbox}
       />
 
       <NewContentModal 
@@ -252,8 +292,27 @@ export default function App() {
 
       <BottomNav 
         currentView={view}
-        setView={setView}
       />
+
+      {/* Elevation 5.3: Floating Quick Capture */}
+      <motion.button
+        whileHover={{ scale: 1.1, rotate: 90 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setIsQuickIdeaModalOpen(true)}
+        className="fixed bottom-32 right-6 lg:bottom-12 lg:right-12 w-16 h-16 bg-cyan text-white rounded-full shadow-2xl shadow-cyan/40 flex items-center justify-center z-40 group border-4 border-white"
+        title="Quick Capture Idea"
+      >
+        <Plus size={32} className="group-hover:text-white transition-colors" />
+      </motion.button>
+      
+      {lightboxImage && (
+        <Lightbox
+          open={isLightboxOpen}
+          close={() => setIsLightboxOpen(false)}
+          slides={[{ src: lightboxImage }]}
+        />
+      )}
+      
       <ToastContainer />
     </div>
   );

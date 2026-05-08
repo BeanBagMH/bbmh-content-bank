@@ -25,6 +25,7 @@ interface DetailPanelProps {
   selectedId: string | null;
   onClose: () => void;
   initialTab?: string;
+  onOpenLightbox?: (url: string) => void;
 }
 
 const TABS = [
@@ -35,7 +36,7 @@ const TABS = [
   { id: 'performance', label: 'Performance', icon: BarChart3 },
 ];
 
-export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, initialTab = 'info' }) => {
+export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, initialTab = 'info', onOpenLightbox }) => {
   const { items, campaigns, updateItem, deleteItem, duplicateItem } = useContentStore();
   const [activeTab, setActiveTab] = React.useState(initialTab);
 
@@ -245,13 +246,18 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
 
              {activeTab === 'writing' && (
                 <div className="space-y-10">
-                   <div className="flex justify-end">
+                   <div className="flex items-center justify-between">
+                       <div className="flex bg-light-grey p-1 rounded-xl">
+                          <button className="px-4 py-2 bg-white text-dark shadow-sm rounded-lg text-[10px] font-black uppercase tracking-widest">Draft V1</button>
+                          <button className="px-4 py-2 text-ash/40 hover:text-dark rounded-lg text-[10px] font-black uppercase tracking-widest transition-all">V2</button>
+                          <button className="px-4 py-2 text-ash/40 hover:text-dark rounded-lg text-[10px] font-black uppercase tracking-widest transition-all">V3</button>
+                       </div>
                       <button 
                         onClick={() => window.print()}
                         className="flex items-center gap-2 px-6 py-3 bg-light-grey rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-dark hover:text-white transition-all shadow-sm"
                       >
                          <Download size={14} />
-                         <span>Export as PDF</span>
+                         <span>Export PDF</span>
                       </button>
                    </div>
                    <EditorSection label="Hook / Headline" value={localItem.hook} onChange={(v: string) => handleLocalUpdate({ hook: v })} placeholder="The opening signal..." />
@@ -263,6 +269,35 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
 
              {activeTab === 'creative' && (
                <div className="space-y-10">
+                  {/* Thumbnail Preview Section */}
+                  <div className="space-y-4">
+                     <label className="text-[10px] font-black text-ash uppercase tracking-widest">Mood Board / Thumbnail</label>
+                     <div 
+                       onClick={() => localItem.asset_link && onOpenLightbox?.(localItem.asset_link)}
+                       className="relative group/thumb aspect-video bg-light-grey rounded-2xl overflow-hidden border border-mist shadow-inner flex items-center justify-center cursor-pointer"
+                     >
+                       {localItem.asset_link && (localItem.asset_link.includes('png') || localItem.asset_link.includes('jpg') || localItem.asset_link.includes('webp') || localItem.asset_link.includes('images.unsplash.com')) ? (
+                          <img 
+                            src={localItem.asset_link} 
+                            alt="Thumbnail Preview" 
+                            className="w-full h-full object-cover cursor-pointer transition-transform duration-500 group-hover/thumb:scale-105"
+                          />
+                       ) : (
+                         <div className="text-center p-8">
+                            <Palette size={40} className="mx-auto mb-4 text-ash/10" />
+                            <p className="text-[11px] font-bold text-ash/30 uppercase tracking-widest">No visual asset detected</p>
+                            <p className="text-[9px] text-ash/20 mt-2 italic">Paste an image URL in "Asset Link" below to preview</p>
+                         </div>
+                       )}
+                       
+                       {localItem.asset_link && (
+                         <div className="absolute inset-0 bg-dark/60 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                            <span className="bg-white text-dark px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest">Visual Active</span>
+                         </div>
+                       )}
+                     </div>
+                  </div>
+
                   <EditorSection label="Thumbnail Idea" value={localItem.thumbnail_idea} onChange={(v: string) => handleLocalUpdate({ thumbnail_idea: v })} placeholder="Visual concept..." />
                   <EditorSection label="Visual Direction" value={localItem.visual_direction} onChange={(v: string) => handleLocalUpdate({ visual_direction: v })} placeholder="Aesthetic notes..." />
                   
@@ -338,6 +373,38 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
                      <PerformanceInput label="Saves" value={localItem.saves} onChange={(v: string) => handleLocalUpdate({ saves: parseInt(v) || 0 })} />
                      <PerformanceInput label="Leads" value={localItem.leads} onChange={(v: string) => handleLocalUpdate({ leads: parseInt(v) || 0 })} />
                   </div>
+
+                  <div className="pt-8 border-t border-mist space-y-6">
+                    <h4 className="text-[10px] font-black text-ash uppercase tracking-[0.2em]">Social Integration IDs</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-[9px] font-black text-ig uppercase tracking-widest flex items-center gap-2">
+                           <div className="w-1.5 h-1.5 rounded-full bg-ig" />
+                           Instagram Media ID
+                        </label>
+                        <input 
+                          type="text" 
+                          value={localItem.ig_id || ''}
+                          onChange={(e) => handleLocalUpdate({ ig_id: e.target.value })}
+                          placeholder="e.g. 18023489231"
+                          className="w-full bg-ig/5 border border-ig/10 p-4 rounded-xl text-[12px] font-mono outline-none focus:border-ig transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[9px] font-black text-yt uppercase tracking-widest flex items-center gap-2">
+                           <div className="w-1.5 h-1.5 rounded-full bg-yt" />
+                           YouTube Video ID
+                        </label>
+                        <input 
+                          type="text" 
+                          value={localItem.yt_id || ''}
+                          onChange={(e) => handleLocalUpdate({ yt_id: e.target.value })}
+                          placeholder="e.g. dQw4w9WgXcQ"
+                          className="w-full bg-yt/5 border border-yt/10 p-4 rounded-xl text-[12px] font-mono outline-none focus:border-yt transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
                </div>
              )}
           </div>
@@ -388,18 +455,40 @@ const PropertyField = ({ label, value, onChange, options }: { label: string, val
   </div>
 );
 
-const EditorSection = ({ label, value, onChange, placeholder, minHeight = "100px" }: any) => (
-  <div className="space-y-4">
-    <label className="text-[10px] font-black text-ash uppercase tracking-widest">{label}</label>
-    <textarea 
-      value={value || ''}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      style={{ minHeight }}
-      className="w-full bg-light-grey/30 border-l-2 border-mist/40 p-6 text-[15px] font-medium leading-relaxed outline-none focus:border-cyan focus:bg-white transition-all resize-none placeholder:text-ash/20"
-    />
-  </div>
-);
+const EditorSection = ({ label, value, onChange, placeholder, minHeight = "100px" }: any) => {
+  const wordCount = (value || '').trim() ? value.trim().split(/\s+/).length : 0;
+  const charCount = (value || '').length;
+
+  const handleCopy = () => {
+    if (!value) return;
+    navigator.clipboard.writeText(value);
+    toast.success(`${label} copied to clipboard`);
+  };
+
+  return (
+    <div className="space-y-4 group/editor">
+      <div className="flex justify-between items-center">
+        <label className="text-[10px] font-black text-ash uppercase tracking-widest">{label}</label>
+        <div className="flex items-center gap-4 opacity-0 group-hover/editor:opacity-100 transition-opacity">
+           <span className="text-[9px] font-mono text-ash/30 uppercase">{wordCount} words / {charCount} chars</span>
+           <button 
+             onClick={handleCopy}
+             className="text-[9px] font-black text-cyan uppercase tracking-widest hover:underline"
+           >
+             Copy
+           </button>
+        </div>
+      </div>
+      <textarea 
+        value={value || ''}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        style={{ minHeight }}
+        className="w-full bg-light-grey/30 border-l-2 border-mist/40 p-6 text-[15px] font-medium leading-relaxed outline-none focus:border-cyan focus:bg-white transition-all resize-none placeholder:text-ash/20"
+      />
+    </div>
+  );
+};
 
 const PerformanceInput = ({ label, value, onChange }: any) => (
   <div className="space-y-2">
