@@ -48,28 +48,14 @@ export function useContentStore() {
     // --- Realtime Subscription Safety Shield ---
     if (!supabase) return;
 
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'ideas' },
-        () => fetchData()
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'campaigns' },
-        () => fetchData()
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'thumbnails' },
-        () => fetchData()
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'team_members' },
-        () => fetchData()
-      )
+    // --- Realtime Subscription (Correct Order) ---
+    const channel = supabase.channel('schema-db-changes');
+    
+    channel
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ideas' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'campaigns' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'thumbnails' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'team_members' }, () => fetchData())
       .subscribe();
 
     return () => {
