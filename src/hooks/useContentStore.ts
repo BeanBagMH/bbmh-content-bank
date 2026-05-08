@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { ContentItem, Idea, Campaign, Thumbnail } from '../types';
-import { db } from '../lib/supabase';
+import { db, supabase } from '../lib/supabase';
 
 export function useContentStore() {
   const [items, setItems] = useState<ContentItem[]>([]);
@@ -46,7 +46,7 @@ export function useContentStore() {
     fetchData();
 
     // --- Realtime Subscription ---
-    const channel = db.supabase
+    const channel = supabase
       .channel('schema-db-changes')
       .on(
         'postgres_changes',
@@ -71,7 +71,7 @@ export function useContentStore() {
       .subscribe();
 
     return () => {
-      db.supabase.removeChannel(channel);
+      supabase.removeChannel(channel);
     };
   }, [fetchData]);
 

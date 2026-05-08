@@ -1,10 +1,8 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Layout, Calendar as CalendarIcon, GripVertical, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type { ContentItem } from '../../types';
 import { CalendarView } from './CalendarView';
 import { BoardView } from './BoardView';
-import { cn } from '../common/Badge';
 
 interface DualViewProps {
   items: ContentItem[];

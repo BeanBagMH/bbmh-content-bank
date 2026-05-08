@@ -120,6 +120,7 @@ export interface Thumbnail {
   content_item_id: string | null;
   headline: string | null;
   visual_description: string | null;
+  image_url: string | null;
   reference_links: string[];
   status: string;
   created_at: string;
