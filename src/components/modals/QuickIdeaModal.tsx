@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Lightbulb, Send } from 'lucide-react';
 import { useContentStore } from '../../hooks/useContentStore';
+import { toast } from '../../hooks/useToast';
 import type { Platform, ContentCluster } from '../../types';
 
 interface QuickIdeaModalProps {
@@ -15,11 +16,13 @@ export const QuickIdeaModal: React.FC<QuickIdeaModalProps> = ({ isOpen, onClose 
   const [note, setNote] = React.useState('');
   const [platform, setPlatform] = React.useState<Platform>('Instagram');
   const [cluster, setCluster] = React.useState<ContentCluster>('General');
+  const [isSubmitting, setSubmitting] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return;
     
+    setSubmitting(true);
     try {
       await addIdea({
         title,
@@ -30,11 +33,12 @@ export const QuickIdeaModal: React.FC<QuickIdeaModalProps> = ({ isOpen, onClose 
       });
       setTitle('');
       setNote('');
+      toast.success('Idea captured!');
       onClose();
-      alert('Idea saved to vault!');
-    } catch (e: any) {
-      console.error(e);
-      alert(`Failed to save idea: ${e.message}`);
+    } catch (err: any) {
+      toast.error(`Failed: ${err.message}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 

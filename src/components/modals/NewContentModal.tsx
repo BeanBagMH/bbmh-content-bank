@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Sparkles } from 'lucide-react';
 import { useContentStore } from '../../hooks/useContentStore';
+import { toast } from '../../hooks/useToast';
 import type { ContentType, Platform, ContentCluster, Priority, ContentStatus } from '../../types';
 
 interface NewContentModalProps {
@@ -13,6 +14,7 @@ interface NewContentModalProps {
 
 export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClose, prefilledDate, prefilledStatus }) => {
   const { addItem } = useContentStore();
+  const [submitting, setSubmitting] = React.useState(false);
   const [formData, setFormData] = React.useState({
     title: '',
     content_type: 'Reel' as ContentType,
@@ -44,6 +46,7 @@ export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClos
     e.preventDefault();
     if (!formData.title) return;
     
+    setSubmitting(true);
     try {
       const { content_cluster, ...rest } = formData;
       await addItem({ 
@@ -51,6 +54,7 @@ export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClos
         cluster: content_cluster,
         archived: false
       });
+      toast.success('Strategy created!');
       onClose();
       setFormData({
         title: '',
@@ -68,10 +72,11 @@ export const NewContentModal: React.FC<NewContentModalProps> = ({ isOpen, onClos
         reference_url: '',
         asset_link: ''
       });
-      alert('Content created successfully!');
-    } catch (e: any) {
-      console.error(e);
-      alert(`Failed to create content: ${e.message}`);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(`Failed: ${err.message}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 

@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { useContentStore } from '../hooks/useContentStore';
 import { cn } from './common/Badge';
+import { toast } from '../hooks/useToast';
+import { ConfirmationModal } from './common/ConfirmationModal';
 import type { ContentItem, ContentStatus, ContentType, Priority, Platform, ContentCluster } from '../types';
 
 interface DetailPanelProps {
@@ -43,6 +45,7 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
     }
   }, [selectedId, initialTab]);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [hasChanges, setHasChanges] = React.useState(false);
   
   const originalItem = items.find(i => i.id === selectedId);
@@ -63,33 +66,39 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
     setHasChanges(true);
   };
 
+  // Auto-save logic
+  React.useEffect(() => {
+    if (!hasChanges || !localItem || isSaving) return;
+
+    const timer = setTimeout(() => {
+      handleSave();
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [localItem, hasChanges]);
+
   const handleSave = async () => {
     if (!selectedId || !localItem) return;
     setIsSaving(true);
     try {
       await updateItem(selectedId, localItem);
       setHasChanges(false);
-      setTimeout(() => {
-        setIsSaving(false);
-        alert('Changes saved successfully!');
-      }, 500);
+      setIsSaving(false);
     } catch (e: any) {
       console.error(e);
       setIsSaving(false);
-      alert(`Failed to save changes: ${e.message}`);
+      // We will add a toast here once sonner is installed
     }
   };
 
   const handleDelete = async () => {
     if (!selectedId) return;
-    if (confirm('Permanently delete this strategy?')) {
-      try {
-        await deleteItem(selectedId);
-        onClose();
-        alert('Deleted successfully');
-      } catch (e: any) {
-        alert(`Failed to delete: ${e.message}`);
-      }
+    try {
+      await deleteItem(selectedId);
+      onClose();
+      toast.success('Deleted successfully');
+    } catch (e: any) {
+      toast.error(`Failed to delete: ${e.message}`);
     }
   };
 
@@ -98,9 +107,9 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
     try {
       await duplicateItem(originalItem);
       onClose();
-      alert('Duplicated successfully');
+      toast.success('Duplicated successfully');
     } catch (e: any) {
-      alert(`Failed to duplicate: ${e.message}`);
+      toast.error(`Failed to duplicate: ${e.message}`);
     }
   };
 
@@ -109,9 +118,9 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
     try {
       await updateItem(selectedId, { archived: true });
       onClose();
-      alert('Archived successfully');
+      toast.success('Archived successfully');
     } catch (e: any) {
-      alert(`Failed to archive: ${e.message}`);
+      toast.error(`Failed to archive: ${e.message}`);
     }
   };
 
@@ -125,14 +134,17 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="fixed right-0 top-0 h-full w-full md:w-[600px] bg-white border-l border-mist shadow-2xl z-30 flex flex-col"
+          className="fixed inset-0 md:inset-y-0 md:right-0 md:left-auto h-full w-full md:w-[600px] bg-white border-l border-mist shadow-2xl z-50 flex flex-col"
         >
           {/* Header */}
-          <div className="p-6 lg:p-8 border-b border-mist flex items-center justify-between bg-light-grey/20">
+          <div className="p-6 md:p-8 border-b border-mist flex items-center justify-between bg-white sticky top-0 z-10">
             <div className="flex items-center gap-4">
-               <button onClick={onClose} className="p-2 hover:bg-mist rounded-lg transition-all text-ash">
-                 <X size={20} />
-               </button>
+              <button 
+                onClick={onClose}
+                className="md:hidden p-2 -ml-2 text-ash/40 hover:text-dark transition-colors"
+              >
+                <X size={24} />
+              </button>
                <div className="h-6 w-px bg-mist" />
                <div className="flex items-center gap-3">
                   <span className="text-[10px] font-mono text-ash/40">#{selectedId.slice(0, 8)}</span>
@@ -163,7 +175,7 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
                  onClick={() => {
                    const text = `Strategy: ${localItem.title}\nStatus: ${localItem.status}\nHook: ${localItem.hook || 'No hook set'}\nView: ${window.location.href}`;
                    navigator.clipboard.writeText(text);
-                   alert('Strategy summary copied to clipboard!');
+                   toast.success('Strategy summary copied!');
                  }} 
                  icon={Share2} 
                  title="Share Strategy" 
@@ -331,6 +343,16 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
           </div>
         </motion.aside>
       )}
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Forever?"
+        message={`Are you sure you want to delete "${localItem.title}"? This action cannot be undone and the strategy will be permanently removed from the BBMh Vault.`}
+        confirmLabel="Delete Forever"
+        confirmVariant="danger"
+      />
     </AnimatePresence>
   );
 };

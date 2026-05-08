@@ -1,15 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Clock, 
-  CheckCircle2, 
-  AlertCircle, 
-  TrendingUp,
-  PieChart,
-  Calendar
-} from 'lucide-react';
-import type { ContentItem } from '../../types';
+import { TrendingUp, Clock, AlertCircle, PieChart, CheckCircle2, Layout, Calendar } from 'lucide-react';
+import { EmptyState } from '../common/EmptyState';
 import { cn } from '../common/Badge';
+import type { ContentItem } from '../../types';
 
 interface DashboardViewProps {
   items: ContentItem[];
@@ -17,6 +11,19 @@ interface DashboardViewProps {
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ items, setView }) => {
+  if (items.length === 0) {
+    return (
+      <EmptyState 
+        icon={TrendingUp}
+        title="Your Ecosystem is Empty"
+        description="The Master Dashboard will light up once you capture your first ideas and strategies."
+        action={{
+          label: "Start Here",
+          onClick: () => setView('ideas-vault')
+        }}
+      />
+    );
+  }
   const stats = React.useMemo(() => {
     const statusCounts = items.reduce((acc: any, item) => {
       acc[item.status] = (acc[item.status] || 0) + 1;

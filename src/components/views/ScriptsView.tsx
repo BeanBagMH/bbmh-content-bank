@@ -2,6 +2,7 @@ import React from 'react';
 import { Copy, CheckCircle2, Terminal } from 'lucide-react';
 import type { ContentItem } from '../../types';
 import { useContentStore } from '../../hooks/useContentStore';
+import { toast } from '../../hooks/useToast';
 import { Badge } from '../common/Badge';
 
 interface ScriptsViewProps {
@@ -14,11 +15,11 @@ export const ScriptsView: React.FC<ScriptsViewProps> = ({ items, onCardClick }) 
 
   const copyToClipboard = (text: string | null, label: string) => {
     if (!text) {
-      alert(`No ${label} to copy!`);
+      toast.error(`No ${label} to copy!`);
       return;
     }
     navigator.clipboard.writeText(text);
-    alert(`${label} copied to clipboard!`);
+    toast.success(`${label} copied to clipboard!`);
   };
 
   const markReady = async (id: string, e: React.MouseEvent) => {

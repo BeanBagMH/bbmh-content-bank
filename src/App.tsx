@@ -1,4 +1,7 @@
 import * as React from 'react';
+import { MobileNav } from './components/layout/MobileNav';
+import { ToastContainer } from './components/common/ToastContainer';
+import { toast } from './hooks/useToast';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useContentStore } from './hooks/useContentStore';
 import { Sidebar } from './components/layout/Sidebar';
@@ -160,68 +163,58 @@ export default function App() {
         <section className="flex-1 overflow-auto p-6 lg:p-12 pb-32 lg:pb-12 custom-scrollbar">
           <AnimatePresence mode="wait">
             <motion.div
-              key={view + (view === 'content-bank' ? filter.subView : '')}
+              key={view}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="h-full"
+              transition={{ duration: 0.2 }}
             >
-              {view === 'dashboard' && <DashboardView items={filteredItems} setView={setView} />}
+              {view === 'dashboard' && <DashboardView items={items} setView={setView} />}
               
+              {view === 'planner' && (
+                <BoardView 
+                  items={filteredItems} 
+                  onCardClick={(id) => openDetail(id)}
+                  onAddNew={() => setIsNewContentModalOpen(true)}
+                />
+              )}
+
               {view === 'content-bank' && (
-                <>
-                  {filter.subView === 'grid' && <GridView items={filteredItems} onCardClick={(id) => openDetail(id, 'info')} />}
-                  {filter.subView === 'board' && <BoardView items={filteredItems} onCardClick={(id) => openDetail(id, 'info')} />}
-                  {filter.subView === 'list' && <ListView items={filteredItems} onCardClick={(id) => openDetail(id, 'info')} />}
-                  {filter.subView === 'calendar' && (
-                    <CalendarView 
-                      items={filteredItems} 
-                      onCardClick={(id) => openDetail(id, 'info')} 
-                      onNewContent={(date?: string) => {
-                        setPrefilledDate(date || null);
-                        setIsNewContentModalOpen(true);
-                      }} 
-                    />
-                  )}
-                </>
+                <ContentBankView 
+                  items={filteredItems} 
+                  filter={filter} 
+                  setFilter={setFilter}
+                  onCardClick={(id) => openDetail(id)}
+                  onAddNew={() => setIsNewContentModalOpen(true)}
+                />
+              )}
+
+              {view === 'ideas-vault' && (
+                <IdeasVaultView 
+                  onAddIdea={() => setIsQuickIdeaModalOpen(true)} 
+                />
               )}
 
               {view === 'calendar' && (
                 <CalendarView 
-                  items={filteredItems} 
-                  onCardClick={(id) => openDetail(id, 'info')} 
-                  onNewContent={(date?: string) => {
-                    setPrefilledDate(date || null);
+                  items={items} 
+                  onCardClick={(id) => openDetail(id)} 
+                  onDateClick={(date) => {
+                    setPrefilledDate(date);
                     setIsNewContentModalOpen(true);
-                  }} 
-                />
-              )}
-
-              {view === 'planner' && (
-                <DualView 
-                  items={filteredItems} 
-                  onCardClick={(id) => openDetail(id, 'info')} 
-                  onNewContent={(date?: string, status?: string) => {
-                    setPrefilledDate(date || null);
-                    setPrefilledStatus(status || 'Raw Idea');
-                    setIsNewContentModalOpen(true);
-                  }} 
-                />
-              )}
-
-              {/* Ideas Vault */}
-              {view === 'ideas-vault' && <IdeasVaultView />}
-
-              {/* Scripts Section */}
-              {view === 'scripts' && (
-                <ScriptsView 
-                  items={items.filter(i => !i.archived)} 
-                  onCardClick={(id) => openDetail(id, 'writing')} 
+                  }}
                 />
               )}
 
               {view === 'campaigns' && <CampaignsView campaigns={campaigns} items={items} />}
+              
+              {view === 'scripts' && (
+                <ScriptsView 
+                  items={items} 
+                  onCardClick={(id) => openDetail(id, 'writing')} 
+                />
+              )}
+
               {view === 'thumbnails' && <ThumbnailBankView thumbnails={thumbnails} items={items} />}
               {view === 'performance' && <PerformanceView items={items} />}
               {view === 'settings' && <SettingsView />}
@@ -229,6 +222,12 @@ export default function App() {
           </AnimatePresence>
         </section>
       </main>
+
+      <MobileNav 
+        currentView={view} 
+        setView={setView} 
+        onAddClick={() => setIsQuickIdeaModalOpen(true)} 
+      />
 
       <DetailPanel 
         selectedId={selectedId} 
@@ -258,9 +257,10 @@ export default function App() {
         currentView={view}
         setView={setView}
       />
+      <ToastContainer />
     </div>
   );
-}
+};
 
 const LoadingScreen = ({ label }: { label: string }) => (
   <div className="h-screen flex flex-col items-center justify-center bg-white">

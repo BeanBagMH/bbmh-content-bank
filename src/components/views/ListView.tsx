@@ -2,6 +2,7 @@ import React from 'react';
 import type { ContentItem } from '../../types';
 import { Badge } from '../common/Badge';
 import { useContentStore } from '../../hooks/useContentStore';
+import { toast } from '../../hooks/useToast';
 import { ChevronDown, Calendar as CalendarIcon, List } from 'lucide-react';
 
 interface ListViewProps {
@@ -16,9 +17,9 @@ export const ListView: React.FC<ListViewProps> = ({ items, onCardClick }) => {
     e.stopPropagation();
     try {
       await updateItem(id, { status: e.target.value as any });
-      alert('Status updated successfully!');
+      toast.success('Status updated!');
     } catch (err: any) {
-      alert(`Failed to update status: ${err.message}`);
+      toast.error(`Failed: ${err.message}`);
     }
   };
 

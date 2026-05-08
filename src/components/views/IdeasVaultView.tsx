@@ -1,10 +1,32 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Lightbulb, Trash2, Rocket, Search } from 'lucide-react';
+import { toast } from '../../hooks/useToast';
+import { EmptyState } from '../common/EmptyState';
 import { useContentStore } from '../../hooks/useContentStore';
+import { ConfirmationModal } from '../common/ConfirmationModal';
 
-export const IdeasVaultView: React.FC = () => {
+interface IdeasVaultViewProps {
+  onAddIdea: () => void;
+}
+
+export const IdeasVaultView: React.FC<IdeasVaultViewProps> = ({ onAddIdea }) => {
   const { ideas, deleteIdea, convertIdeaToContent } = useContentStore();
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+
+  if (ideas.length === 0) {
+    return (
+      <EmptyState 
+        icon={Lightbulb}
+        title="Your Ideas Vault is Empty"
+        description="Every viral video starts with a raw spark. Capture your first idea now."
+        action={{
+          label: "+ Add First Idea",
+          onClick: onAddIdea
+        }}
+      />
+    );
+  }
   const [searchQuery, setSearchQuery] = React.useState('');
 
   const filteredIdeas = ideas.filter(idea => 
@@ -61,9 +83,9 @@ export const IdeasVaultView: React.FC = () => {
                     onClick={async () => {
                       try {
                         await convertIdeaToContent(idea);
-                        alert('Idea promoted to Content Bank!');
+                        toast.success('Idea promoted to Content Bank!');
                       } catch (e: any) {
-                        alert(`Failed to promote: ${e.message}`);
+                        toast.error(`Failed to promote: ${e.message}`);
                       }
                     }}
                     className="p-2 hover:bg-cyan/10 rounded-lg text-cyan transition-all"
@@ -72,16 +94,7 @@ export const IdeasVaultView: React.FC = () => {
                     <Rocket size={16} />
                   </button>
                   <button 
-                    onClick={async () => {
-                      if (confirm('Discard this idea?')) {
-                        try {
-                          await deleteIdea(idea.id);
-                          alert('Idea discarded');
-                        } catch (e: any) {
-                          alert(`Failed to discard: ${e.message}`);
-                        }
-                      }
-                    }}
+                    onClick={() => setDeletingId(idea.id)}
                     className="p-2 hover:bg-red-50 rounded-lg text-red-400 transition-all"
                     title="Discard"
                   >
@@ -116,16 +129,28 @@ export const IdeasVaultView: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="py-32 flex flex-col items-center justify-center text-center space-y-6">
-           <div className="w-20 h-20 bg-light-grey rounded-full flex items-center justify-center text-ash/20">
-              <Lightbulb size={40} />
-           </div>
-           <div>
-              <h3 className="text-xl font-display font-bold text-dark">The Vault is Silent</h3>
-              <p className="text-ash/40 text-sm">Every great strategy starts with a single spark.</p>
-           </div>
+        <div className="py-24 text-center">
+          <p className="text-ash/40 text-sm italic">No concepts match your search.</p>
         </div>
       )}
+      <ConfirmationModal
+        isOpen={!!deletingId}
+        onClose={() => setDeletingId(null)}
+        onConfirm={async () => {
+          if (deletingId) {
+            try {
+              await deleteIdea(deletingId);
+              toast.success('Idea discarded');
+            } catch (e: any) {
+              toast.error(`Failed: ${e.message}`);
+            }
+          }
+        }}
+        title="Discard Concept?"
+        message="Are you sure you want to discard this idea? This will permanently remove it from your vault."
+        confirmLabel="Discard"
+        confirmVariant="danger"
+      />
     </div>
   );
 };
