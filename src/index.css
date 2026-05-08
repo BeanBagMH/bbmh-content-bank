@@ -51,8 +51,8 @@
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -62,14 +62,17 @@
 ::-webkit-scrollbar-thumb {
   background: var(--mist);
   border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--ash);
+  background-clip: content-box;
 }
 
 .custom-scrollbar-mini::-webkit-scrollbar {
-  width: 2px;
+  width: 4px;
 }
 
 /* UI Utilities */

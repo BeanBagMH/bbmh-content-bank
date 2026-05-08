@@ -144,6 +144,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ items, onCardClick, 
                       {dayItems.map(it => (
                         <div 
                           key={it.id} 
+                          draggable={true}
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('itemId', it.id);
+                            e.dataTransfer.effectAllowed = 'move';
+                          }}
                           onClick={() => onCardClick(it.id)}
                           className="p-3 bg-white border border-mist rounded-lg cursor-pointer hover:border-cyan/40 hover:shadow-lg hover:shadow-dark/5 transition-all group/item"
                         >

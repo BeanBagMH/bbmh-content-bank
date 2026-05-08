@@ -233,7 +233,10 @@ export default function App() {
       <DetailPanel 
         selectedId={selectedId} 
         initialTab={detailTab}
-        onClose={() => setSelectedId(null)} 
+        onClose={() => {
+          setSelectedId(null);
+          setIsDetailOpen(false);
+        }} 
       />
 
       <NewContentModal 

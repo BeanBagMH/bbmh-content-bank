@@ -48,10 +48,13 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
   const originalItem = items.find(i => i.id === selectedId);
   const [localItem, setLocalItem] = React.useState<ContentItem | null>(null);
   
+  // Update local item when selection changes
   React.useEffect(() => {
     if (originalItem) {
       setLocalItem({ ...originalItem });
       setHasChanges(false);
+    } else {
+      setLocalItem(null);
     }
   }, [originalItem, selectedId]);
 

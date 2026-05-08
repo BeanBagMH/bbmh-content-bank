@@ -42,7 +42,7 @@ export const GridView: React.FC<GridViewProps> = ({ items, onCardClick }) => {
             {item.hook || item.notes || "No strategy snippet provided yet..."}
           </p>
 
-          <div className="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 rounded-3xl">
+          <div className="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 rounded-3xl pointer-events-none group-hover:pointer-events-auto">
              <button 
                onClick={(e) => {
                  e.stopPropagation();
