@@ -4,14 +4,18 @@ import { useContentStore } from '../../hooks/useContentStore';
 import { cn } from '../common/Badge';
 import { toast } from '../../hooks/useToast';
 
-export const SettingsView: React.FC = () => {
-  const { currentProfile, updateProfile } = useContentStore();
+interface SettingsViewProps {
+  userEmail?: string;
+}
+
+export const SettingsView: React.FC<SettingsViewProps> = ({ userEmail }) => {
+  const { currentProfile, socialProfile, updateProfile, upsertSocialProfile } = useContentStore();
   const [activeTab, setActiveTab] = useState('Profile');
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>({
     full_name: '',
-    email: '',
     role: '',
+    bio: '',
     avatar_url: '',
     instagram_handle: '',
     youtube_channel_id: '',
@@ -25,29 +29,56 @@ export const SettingsView: React.FC = () => {
 
   useEffect(() => {
     if (currentProfile) {
-      setFormData({
+      setFormData(prev => ({
+        ...prev,
         full_name: currentProfile.full_name || '',
-        email: currentProfile.email || '',
         role: currentProfile.role || '',
+        bio: currentProfile.bio || '',
         avatar_url: currentProfile.avatar_url || '',
-        instagram_handle: currentProfile.instagram_handle || '',
-        youtube_channel_id: currentProfile.youtube_channel_id || '',
-        linkedin_url: currentProfile.linkedin_url || '',
-        twitter_handle: currentProfile.twitter_handle || '',
         niche: currentProfile.niche || '',
         primary_platform: currentProfile.primary_platform || '',
         posting_frequency: currentProfile.posting_frequency || '',
         timezone: currentProfile.timezone || 'UTC'
-      });
+      }));
     }
-  }, [currentProfile]);
+    if (socialProfile) {
+      setFormData(prev => ({
+        ...prev,
+        instagram_handle: socialProfile.instagram_handle || '',
+        youtube_channel_id: socialProfile.youtube_channel_id || '',
+        linkedin_url: socialProfile.linkedin_url || '',
+        twitter_handle: socialProfile.twitter_handle || ''
+      }));
+    }
+  }, [currentProfile, socialProfile]);
 
   const handleSave = async () => {
-    if (!currentProfile) return;
     try {
-      await updateProfile(currentProfile.id, formData);
+      const toastId = toast.loading('Saving strategic configuration...');
+      
+      if (activeTab === 'Integrations') {
+        await upsertSocialProfile({
+          instagram_handle: formData.instagram_handle,
+          youtube_channel_id: formData.youtube_channel_id,
+          linkedin_url: formData.linkedin_url,
+          twitter_handle: formData.twitter_handle
+        });
+      } else {
+        if (currentProfile) {
+          await updateProfile(currentProfile.id, {
+            full_name: formData.full_name,
+            role: formData.role,
+            bio: formData.bio,
+            niche: formData.niche,
+            primary_platform: formData.primary_platform,
+            posting_frequency: formData.posting_frequency,
+            timezone: formData.timezone
+          });
+        }
+      }
+      
       setIsEditing(false);
-      toast.success('Strategy profile updated');
+      toast.success('Strategy profile updated', { id: toastId });
     } catch (err: any) {
       toast.error(`Update failed: ${err.message}`);
     }

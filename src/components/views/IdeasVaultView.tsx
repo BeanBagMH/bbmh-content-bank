@@ -23,7 +23,7 @@ export const IdeasVaultView: React.FC<IdeasVaultViewProps> = ({ onAddIdea }) => 
     localStorage.setItem('ideasLayout', newLayout);
   };
 
-  if (ideas.length === 0) {
+  if (!ideas || ideas.length === 0) {
     return (
       <EmptyState 
         icon={Lightbulb}
@@ -126,9 +126,9 @@ export const IdeasVaultView: React.FC<IdeasVaultViewProps> = ({ onAddIdea }) => 
                   {idea.title}
                 </h3>
 
-                {layout === 'grid' && idea.note && (
+                {layout === 'grid' && idea.notes && (
                   <p className="text-sm text-ash/60 leading-relaxed mb-6 line-clamp-3">
-                    {idea.note}
+                    {idea.notes}
                   </p>
                 )}
               </div>

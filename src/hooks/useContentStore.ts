@@ -12,6 +12,7 @@ export function useContentStore() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentProfile, setCurrentProfile] = useState<any>(null);
+  const [socialProfile, setSocialProfile] = useState<any>(null);
 
   const fetchData = useCallback(async (userEmail?: string) => {
     setLoading(true);
@@ -28,9 +29,14 @@ export function useContentStore() {
       setCampaigns(campaignsData);
       setThumbnails(thumbnailsData);
       
-      if (userEmail) {
-        const profile = await db.getProfile(userEmail);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const [profile, social] = await Promise.all([
+          db.getProfile(user.email || ''),
+          db.getSocialProfile(user.id).catch(() => null)
+        ]);
         setCurrentProfile(profile);
+        setSocialProfile(social);
       }
       
       setInitialized(true);
@@ -62,6 +68,7 @@ export function useContentStore() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'thumbnail_assets' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'team_members' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'content_items' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'social_profiles' }, () => fetchData())
       .subscribe();
 
     return () => {
@@ -253,6 +260,24 @@ export function useContentStore() {
     }
   };
 
+  const upsertSocialProfile = async (profile: any) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      
+      const updatedSocial = await db.upsertSocialProfile({
+        ...profile,
+        user_id: user.id,
+        updated_at: new Date().toISOString()
+      });
+      setSocialProfile(updatedSocial);
+      return updatedSocial;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   return {
     items,
     ideas,
@@ -274,7 +299,9 @@ export function useContentStore() {
     deleteThumbnail,
     uploadAsset,
     updateProfile,
+    upsertSocialProfile,
     currentProfile,
+    socialProfile,
     initialized,
     loading,
     error,

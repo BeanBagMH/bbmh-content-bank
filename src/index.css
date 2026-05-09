@@ -93,6 +93,7 @@
 /* UI Utilities */
 .text-cyan { color: var(--cyan); }
 .bg-cyan { background-color: var(--cyan); }
+.bg-bg { background-color: var(--bg); }
 .text-turquoise { color: var(--pastel-turquoise); }
 .bg-dark { background-color: var(--text); }
 .text-dark { color: var(--text); }

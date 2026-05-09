@@ -327,10 +327,32 @@ export const db = {
       .update(updates)
       .eq('id', id)
       .select();
-    if (error) {
-      console.error('Error updating profile:', error);
-      throw error;
-    }
+      
+    if (error) throw error;
+    return data[0];
+  },
+
+  // --- Social Profiles (V4 Definitive) ---
+  async getSocialProfile(userId: string) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('social_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  },
+
+  async upsertSocialProfile(profile: any) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('social_profiles')
+      .upsert(profile, { onConflict: 'user_id' })
+      .select();
+    
+    if (error) throw error;
     return data[0];
   },
 

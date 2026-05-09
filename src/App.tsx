@@ -184,13 +184,13 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen bg-[#fcfaf9] overflow-hidden font-body text-dark selection:bg-cyan/20">
+    <div className="flex h-screen bg-bg overflow-hidden font-body text-dark selection:bg-cyan/20">
       <Sidebar 
         currentView={view} 
         itemCounts={itemCounts}
       />
 
-      <main className="flex-1 flex flex-col min-w-0 bg-[#fcfaf9] relative">
+      <main className="flex-1 flex flex-col min-w-0 bg-bg relative">
         <Topbar 
           currentView={view} 
           setView={setView}
@@ -320,17 +320,17 @@ export default function App() {
 };
 
 const LoadingScreen = ({ label }: { label: string }) => (
-  <div className="h-screen flex flex-col items-center justify-center bg-white">
+  <div className="h-screen flex flex-col items-center justify-center bg-surface">
     <div className="w-12 h-12 border-4 border-mist border-t-cyan rounded-full animate-spin mb-6" />
     <div className="animate-pulse text-ash/40 text-[10px] uppercase tracking-[0.4em] font-bold">{label}</div>
   </div>
 );
 
 const SetupRequired = () => (
-  <div className="h-screen flex items-center justify-center bg-[#fcfaf9] p-12">
+  <div className="h-screen flex items-center justify-center bg-bg p-12">
     <div className="max-w-xl w-full space-y-12 text-center">
       <h1 className="text-6xl font-display text-dark italic-serif leading-none">Setup Required</h1>
-      <div className="bg-white p-12 border border-mist text-left space-y-8 shadow-[0_40px_80px_rgba(0,0,0,0.03)]">
+      <div className="bg-surface p-12 border border-mist text-left space-y-8 shadow-[0_40px_80px_rgba(0,0,0,0.03)]">
         <p className="text-lg font-display italic-serif text-dark leading-relaxed">
           Please add these environment variables to your .env.local:
         </p>
