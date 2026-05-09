@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Image as ImageIcon, Plus, Maximize2, Download, X, Trash2 } from 'lucide-react';
 import type { ThumbnailAsset, ContentItem } from '../../types';
 import { useContentStore } from '../../hooks/useContentStore';
+import { supabase } from '../../lib/supabase';
 import { toast } from '../../hooks/useToast';
 
 interface ThumbnailBankViewProps {
@@ -47,6 +48,14 @@ export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails
     }
   };
 
+  const getAssetUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    // Fallback for legacy records that only stored filename
+    const projectUrl = 'https://ddnyzycqfkkyyddmymuj.supabase.co';
+    return `${projectUrl}/storage/v1/object/public/thumbnails/${url}`;
+  };
+
   return (
     <div className="space-y-12">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -79,8 +88,9 @@ export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails
               key={thumb.id} 
               thumbnail={thumb} 
               parentItem={items.find(i => i.id === thumb.related_content_id)}
-              onMaximize={() => setSelectedImage(thumb.image_url)}
+              onMaximize={() => setSelectedImage(getAssetUrl(thumb.image_url))}
               onDelete={() => handleDelete(thumb)}
+              assetUrl={getAssetUrl(thumb.image_url)}
             />
           ))
         ) : (
@@ -119,14 +129,14 @@ export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails
   );
 };
 
-const ThumbnailCard = ({ thumbnail, parentItem, onMaximize, onDelete }: { thumbnail: ThumbnailAsset, parentItem?: ContentItem, onMaximize: () => void, onDelete: () => void }) => (
+const ThumbnailCard = ({ thumbnail, parentItem, onMaximize, onDelete, assetUrl }: { thumbnail: ThumbnailAsset, parentItem?: ContentItem, onMaximize: () => void, onDelete: () => void, assetUrl: string }) => (
   <motion.div 
     whileHover={{ y: -8 }}
     className="group relative bg-white border border-mist rounded-[32px] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-dark/5 transition-all"
   >
     <div className="aspect-[16/9] bg-light-grey relative overflow-hidden">
-       {thumbnail.image_url ? (
-         <img src={thumbnail.image_url} alt={thumbnail.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+       {assetUrl ? (
+         <img src={assetUrl} alt={thumbnail.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
        ) : (
          <div className="absolute inset-0 flex items-center justify-center text-ash/10">
             <ImageIcon size={48} />
@@ -141,7 +151,7 @@ const ThumbnailCard = ({ thumbnail, parentItem, onMaximize, onDelete }: { thumbn
              <Maximize2 size={18} />
           </button>
           <a 
-            href={thumbnail.image_url || '#'} 
+            href={assetUrl || '#'} 
             download 
             target="_blank" 
             rel="noreferrer"

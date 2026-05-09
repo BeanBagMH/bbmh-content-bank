@@ -14,6 +14,7 @@ interface IdeasVaultViewProps {
 export const IdeasVaultView: React.FC<IdeasVaultViewProps> = ({ onAddIdea }) => {
   const { ideas, deleteIdea, convertIdeaToContent } = useContentStore();
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = React.useState('');
   const [layout, setLayout] = React.useState<'grid' | 'list'>(() => {
     return (localStorage.getItem('ideasLayout') as 'grid' | 'list') || 'grid';
   });
@@ -36,7 +37,6 @@ export const IdeasVaultView: React.FC<IdeasVaultViewProps> = ({ onAddIdea }) => 
       />
     );
   }
-  const [searchQuery, setSearchQuery] = React.useState('');
 
   const filteredIdeas = (ideas || []).filter(idea => 
     idea &&

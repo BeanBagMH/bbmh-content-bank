@@ -242,6 +242,10 @@ export function useContentStore() {
     try {
       const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
       const publicUrl = await db.uploadFile('thumbnails', fileName, file);
+      
+      // Ensure we have a valid URL
+      if (!publicUrl) throw new Error('Failed to generate public URL');
+      
       return publicUrl;
     } catch (err: any) {
       setError(err.message);
@@ -262,8 +266,12 @@ export function useContentStore() {
 
   const upsertSocialProfile = async (profile: any) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Authentication required to save profiles');
+
       const updatedSocial = await db.upsertSocialProfile({
         ...profile,
+        user_id: user.id,
         updated_at: new Date().toISOString()
       });
       setSocialProfile(updatedSocial);

@@ -76,18 +76,14 @@ export default function App() {
   
   // Theme Engine
   const [isDarkMode, setIsDarkMode] = React.useState(() => {
-    return localStorage.getItem('theme') === 'dark';
+    return localStorage.getItem('bbmh-theme') === 'dark';
   });
 
   React.useEffect(() => {
     const root = window.document.documentElement;
-    if (isDarkMode) {
-      root.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      root.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
+    const theme = isDarkMode ? 'dark' : 'light';
+    root.setAttribute('data-theme', theme);
+    localStorage.setItem('bbmh-theme', theme);
   }, [isDarkMode]);
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
