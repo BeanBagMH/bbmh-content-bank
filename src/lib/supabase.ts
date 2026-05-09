@@ -332,5 +332,27 @@ export const db = {
       throw error;
     }
     return data[0];
+  },
+
+  // --- Storage ---
+  async uploadFile(bucket: string, path: string, file: File) {
+    if (!supabase) throw new Error('Database not configured');
+    
+    // 1. Upload the file
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(path, file, { upsert: true });
+      
+    if (error) {
+      console.error('Storage upload error:', error);
+      throw error;
+    }
+    
+    // 2. Get the public URL
+    const { data: urlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(data.path);
+      
+    return urlData.publicUrl;
   }
 };

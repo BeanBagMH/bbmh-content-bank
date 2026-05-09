@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -92,8 +93,52 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ items, onCardClick, 
         </div>
       </div>
 
-      {/* Calendar Grid Container */}
-      <div className="flex-1 min-h-[600px] overflow-x-auto custom-scrollbar pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+      {/* Mobile Agenda View (Visible only on small screens) */}
+      <div className="md:hidden flex-1 space-y-8 overflow-y-auto pb-20">
+        {Array.from({ length: totalDays }).map((_, i) => {
+          const dayNum = i + 1;
+          const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`;
+          const dayItems = items.filter(it => it.publish_date?.startsWith(dateStr));
+          
+          if (dayItems.length === 0) return null;
+
+          return (
+            <div key={i} className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-white border border-mist flex flex-col items-center justify-center shadow-sm">
+                   <span className="text-[10px] font-black text-ash/40 uppercase tracking-tighter">{DAYS[(new Date(year, month, dayNum).getDay() + 6) % 7]}</span>
+                   <span className="text-lg font-display font-bold text-dark">{dayNum}</span>
+                </div>
+                <div className="h-px flex-1 bg-mist/30" />
+              </div>
+              
+              <div className="space-y-4 pl-4 border-l-2 border-mist/20 ml-6">
+                {dayItems.map(it => (
+                  <motion.div 
+                    key={it.id}
+                    onClick={() => onCardClick(it.id)}
+                    className="p-5 bg-white border border-mist rounded-2xl shadow-sm active:scale-95 transition-all"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                       <span className="text-[9px] font-black text-cyan uppercase tracking-widest bg-cyan/5 px-2 py-0.5 rounded-full">{it.content_type}</span>
+                    </div>
+                    <h4 className="text-[15px] font-bold text-dark leading-snug">{it.title}</h4>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        {items.filter(it => it.publish_date?.startsWith(`${year}-${(month + 1).toString().padStart(2, '0')}`)).length === 0 && (
+          <div className="py-20 text-center space-y-4">
+             <p className="text-ash/40 text-xs font-bold uppercase tracking-widest">No strategic deployments this month</p>
+             <button onClick={() => onNewContent()} className="text-cyan text-[10px] font-black uppercase tracking-widest">Schedule first piece</button>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Calendar Grid (Hidden on Mobile) */}
+      <div className="hidden md:flex flex-1 min-h-[600px] overflow-x-auto custom-scrollbar pb-4 -mx-4 px-4 md:mx-0 md:px-0">
         <div className="min-w-[800px] md:min-w-full flex flex-col bg-white border border-mist rounded-3xl overflow-hidden shadow-sm h-full">
           <div className="grid grid-cols-7 border-b border-mist bg-light-grey/30 sticky top-0 z-20">
             {DAYS.map(d => (

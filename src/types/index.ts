@@ -127,3 +127,26 @@ export interface ThumbnailAsset {
   created_at: string;
   updated_at: string;
 }
+
+export interface Profile {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  email: string | null;
+  role: string | null;
+  
+  // Social IDs (Elevation 5.0)
+  instagram_handle: string | null;
+  youtube_channel_id: string | null;
+  youtube_handle: string | null;
+  linkedin_url: string | null;
+  twitter_handle: string | null;
+  
+  // Workspace Settings
+  niche: string | null;
+  primary_platform: string | null;
+  posting_frequency: string | null;
+  timezone: string | null;
+  
+  updated_at: string;
+}

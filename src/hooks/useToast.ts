@@ -1,50 +1,64 @@
 import { useState, useEffect } from 'react';
 
-export type ToastType = 'success' | 'error' | 'info';
+type ToastType = 'success' | 'error' | 'info' | 'loading';
 
 interface Toast {
   id: string;
   message: string;
   type: ToastType;
+  duration?: number;
 }
 
-// Global state for toasts
-let listeners: Array<(toasts: Toast[]) => void> = [];
+let toastCount = 0;
+let observers: ((toasts: Toast[]) => void)[] = [];
 let toasts: Toast[] = [];
 
 const notify = () => {
-  listeners.forEach((listener) => listener([...toasts]));
+  observers.forEach(observer => observer([...toasts]));
 };
 
 export const toast = {
-  success: (message: string) => addToast(message, 'success'),
-  error: (message: string) => addToast(message, 'error'),
-  info: (message: string) => addToast(message, 'info'),
+  success: (message: string, options?: { id?: string, duration?: number }) => {
+    const id = options?.id || `toast-${toastCount++}`;
+    const existing = toasts.find(t => t.id === id);
+    if (existing) {
+      toasts = toasts.map(t => t.id === id ? { ...t, message, type: 'success' as ToastType } : t);
+    } else {
+      toasts = [{ id, message, type: 'success', duration: options?.duration || 3000 }, ...toasts];
+    }
+    notify();
+    if (!options?.id) setTimeout(() => toast.dismiss(id), options?.duration || 3000);
+    return id;
+  },
+  error: (message: string, options?: { id?: string, duration?: number }) => {
+    const id = options?.id || `toast-${toastCount++}`;
+    toasts = [{ id, message, type: 'error', duration: options?.duration || 5000 }, ...toasts];
+    notify();
+    setTimeout(() => toast.dismiss(id), options?.duration || 5000);
+    return id;
+  },
+  loading: (message: string, options?: { id?: string }) => {
+    const id = options?.id || `toast-${toastCount++}`;
+    toasts = [{ id, message, type: 'loading' }, ...toasts];
+    notify();
+    return id;
+  },
+  dismiss: (id: string) => {
+    toasts = toasts.filter(t => t.id !== id);
+    notify();
+  }
 };
 
-const addToast = (message: string, type: ToastType) => {
-  const id = Math.random().toString(36).substring(2, 9);
-  toasts = [...toasts, { id, message, type }];
-  notify();
-  setTimeout(() => {
-    removeToast(id);
-  }, 3000);
-};
-
-const removeToast = (id: string) => {
-  toasts = toasts.filter((t) => t.id !== id);
-  notify();
-};
-
-export const useToasts = () => {
-  const [state, setState] = useState<Toast[]>(toasts);
+export function useToasts() {
+  const [activeToasts, setActiveToasts] = useState<Toast[]>([]);
 
   useEffect(() => {
-    listeners.push(setState);
+    observers.push(setActiveToasts);
+    setActiveToasts([...toasts]);
     return () => {
-      listeners = listeners.filter((l) => l !== setState);
+      observers = observers.filter(o => o !== setActiveToasts);
     };
   }, []);
 
-  return state;
-};
+  return activeToasts;
+}

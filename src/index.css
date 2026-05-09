@@ -103,6 +103,12 @@
 .text-ig { color: var(--ig); }
 .text-yt { color: var(--yt); }
 
+/* Theme-Aware Tailwind Overrides */
+.bg-white { background-color: var(--surface) !important; }
+.text-dark { color: var(--text) !important; }
+.bg-light-grey { background-color: var(--surface-alt) !important; }
+.border-mist { border-color: var(--border) !important; }
+
 /* Animation Overrides */
 .animate-in {
   animation: animate-in 0.5s cubic-bezier(0.4, 0, 0.2, 1);

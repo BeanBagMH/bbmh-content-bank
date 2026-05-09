@@ -3,10 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BBMh Content Bank</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>BBMh Content OS · V4.2.0-PRO</title>
     <style>
-      body { margin: 0; background: #fcfaf9; }
+      body { margin: 0; background: #fcfaf9; overflow-x: hidden; }
+      @media (max-width: 1024px) {
+        .sidebar-desktop { display: none !important; }
+        .main-content { padding-bottom: 80px !important; }
+      }
+      @media (min-width: 1025px) {
+        .mobile-nav-bottom { display: none !important; }
+      }
       .initial-loader {
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;

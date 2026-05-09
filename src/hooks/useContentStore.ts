@@ -218,6 +218,17 @@ export function useContentStore() {
     }
   };
 
+  const uploadAsset = async (file: File) => {
+    try {
+      const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
+      const publicUrl = await db.uploadFile('thumbnails', fileName, file);
+      return publicUrl;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   const updateProfile = async (id: string, updates: any) => {
     try {
       const updatedProfile = await db.updateProfile(id, updates);
@@ -248,6 +259,7 @@ export function useContentStore() {
     addThumbnail,
     updateThumbnail,
     deleteThumbnail,
+    uploadAsset,
     updateProfile,
     currentProfile,
     initialized,

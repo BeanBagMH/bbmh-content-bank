@@ -39,7 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, itemCounts }) => 
   };
 
   return (
-    <aside className="hidden lg:flex w-[280px] h-full bg-white border-r border-mist flex-col z-20">
+    <aside className="sidebar-desktop hidden lg:flex w-[280px] h-full bg-white border-r border-mist flex-col z-20">
       {/* Brand Header */}
       <div className="p-10 border-b border-mist">
         <div className="flex items-center gap-4 mb-2">

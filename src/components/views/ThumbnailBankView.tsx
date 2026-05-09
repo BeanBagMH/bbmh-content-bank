@@ -1,8 +1,9 @@
-import React, { useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Image as ImageIcon, Plus, Maximize2, Download } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Image as ImageIcon, Plus, Maximize2, Download, X } from 'lucide-react';
 import type { ThumbnailAsset, ContentItem } from '../../types';
 import { useContentStore } from '../../hooks/useContentStore';
+import { toast } from '../../hooks/useToast';
 
 interface ThumbnailBankViewProps {
   thumbnails: ThumbnailAsset[];
@@ -10,33 +11,36 @@ interface ThumbnailBankViewProps {
 }
 
 export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails, items }) => {
-  const { addThumbnail } = useContentStore();
+  const { addThumbnail, uploadAsset } = useContentStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const localUrl = URL.createObjectURL(file);
+      const toastId = toast.loading('Uploading to cloud...');
       try {
+        const publicUrl = await uploadAsset(file);
         await addThumbnail({
           title: file.name,
           status: 'Draft',
-          image_url: localUrl,
+          image_url: publicUrl,
           thumbnail_headline: 'New Hook Concept',
-          visual_description: 'Uploaded from device'
+          visual_description: 'Uploaded to Strategic Cloud'
         });
-      } catch (err) {
-        console.error('Failed to add asset:', err);
+        toast.success('Asset archived successfully', { id: toastId });
+      } catch (err: any) {
+        toast.error(`Archive failed: ${err.message}`, { id: toastId });
       }
     }
   };
 
   return (
     <div className="space-y-12">
-      <div className="flex items-end justify-between">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-           <h2 className="text-5xl font-display font-bold text-dark tracking-tighter mb-4">Thumbnail Bank</h2>
-           <p className="text-ash/60 text-[11px] font-bold uppercase tracking-[0.4em]">Visual Hook Repository & A/B Testing</p>
+           <h2 className="text-5xl lg:text-7xl font-display font-bold text-dark tracking-tighter mb-4 italic-serif">Thumbnail Bank</h2>
+           <p className="text-ash/60 text-[11px] font-bold uppercase tracking-[0.4em]">Visual Hook Repository & Strategic Assets</p>
         </div>
         
         <input 
@@ -49,69 +53,103 @@ export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails
         
         <button 
           onClick={() => fileInputRef.current?.click()}
-          className="bg-dark text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-cyan transition-all shadow-lg shadow-dark/5"
+          className="bg-dark text-white px-10 py-5 rounded-2xl flex items-center gap-4 hover:bg-cyan transition-all shadow-xl shadow-dark/5"
         >
           <Plus size={18} />
-          <span className="text-[11px] font-bold uppercase tracking-widest">Add Asset</span>
+          <span className="text-[11px] font-black uppercase tracking-[0.2em]">Add Strategic Asset</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {thumbnails.length > 0 ? (
           thumbnails.map((thumb) => (
             <ThumbnailCard 
               key={thumb.id} 
               thumbnail={thumb} 
-              parentItem={items.find(i => i.id === thumb.related_content_id)} 
+              parentItem={items.find(i => i.id === thumb.related_content_id)}
+              onMaximize={() => setSelectedImage(thumb.image_url)}
             />
           ))
         ) : (
-          <div className="col-span-full py-32 flex flex-col items-center justify-center text-center bg-white border border-mist rounded-[40px] border-dashed">
-             <div className="w-16 h-16 bg-light-grey rounded-full flex items-center justify-center mb-6 text-ash/20">
+          <div className="col-span-full py-32 flex flex-col items-center justify-center text-center bg-white border border-mist rounded-[48px] border-dashed">
+             <div className="w-20 h-20 bg-light-grey rounded-full flex items-center justify-center mb-6 text-ash/20">
                 <ImageIcon size={32} />
              </div>
-             <p className="text-sm font-bold text-ash/40 uppercase tracking-widest">No visual assets archived</p>
+             <p className="text-sm font-bold text-ash/40 uppercase tracking-[0.3em]">No visual assets archived</p>
           </div>
         )}
       </div>
+
+      {/* Full-Screen Lightbox */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-dark/95 backdrop-blur-xl flex items-center justify-center p-8 lg:p-24"
+            onClick={() => setSelectedImage(null)}
+          >
+             <button className="absolute top-12 right-12 text-white/40 hover:text-white transition-colors">
+                <X size={32} />
+             </button>
+             <motion.img 
+               layoutId={selectedImage}
+               src={selectedImage} 
+               className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain"
+               onClick={(e) => e.stopPropagation()}
+             />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
-const ThumbnailCard = ({ thumbnail, parentItem }: { thumbnail: ThumbnailAsset, parentItem?: ContentItem }) => (
+const ThumbnailCard = ({ thumbnail, parentItem, onMaximize }: { thumbnail: ThumbnailAsset, parentItem?: ContentItem, onMaximize: () => void }) => (
   <motion.div 
-    whileHover={{ y: -4 }}
-    className="group relative bg-white border border-mist rounded-2xl overflow-hidden shadow-sm"
+    whileHover={{ y: -8 }}
+    className="group relative bg-white border border-mist rounded-[32px] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-dark/5 transition-all"
   >
-    {/* Aspect Ratio Container (16:9 for thumbnails, or 9:16 for Reels) */}
     <div className="aspect-[16/9] bg-light-grey relative overflow-hidden">
        {thumbnail.image_url ? (
-         <img src={thumbnail.image_url} alt={thumbnail.title} className="w-full h-full object-cover" />
+         <img src={thumbnail.image_url} alt={thumbnail.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
        ) : (
          <div className="absolute inset-0 flex items-center justify-center text-ash/10">
             <ImageIcon size={48} />
          </div>
        )}
        
-       {/* Overlay Actions */}
-       <div className="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-          <button className="p-3 bg-white rounded-full text-dark hover:bg-cyan hover:text-white transition-all">
-             <Maximize2 size={18} />
+       <div className="absolute inset-0 bg-dark/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+          <button 
+            onClick={(e) => { e.stopPropagation(); onMaximize(); }}
+            className="p-4 bg-white rounded-2xl text-dark hover:bg-cyan hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-300"
+          >
+             <Maximize2 size={20} />
           </button>
-          <button className="p-3 bg-white rounded-full text-dark hover:bg-cyan hover:text-white transition-all">
-             <Download size={18} />
-          </button>
+          <a 
+            href={thumbnail.image_url || '#'} 
+            download 
+            target="_blank" 
+            rel="noreferrer"
+            className="p-4 bg-white rounded-2xl text-dark hover:bg-cyan hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-300 delay-75"
+          >
+             <Download size={20} />
+          </a>
        </div>
     </div>
 
-    <div className="p-6">
-       <div className="text-[9px] font-black uppercase text-ash/40 tracking-widest mb-2">
-         {parentItem?.title || 'Standalone Asset'}
+    <div className="p-8">
+       <div className="text-[10px] font-black uppercase text-ash/30 tracking-[0.2em] mb-3">
+         {parentItem?.title || 'Standalone Hook Asset'}
        </div>
-       <h4 className="text-[14px] font-bold text-dark truncate mb-1">{thumbnail.title}</h4>
-       <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-turquoise" />
-          <span className="text-[10px] font-bold text-ash/60 uppercase tracking-tighter">{thumbnail.status}</span>
+       <h4 className="text-lg font-display font-bold text-dark truncate mb-4">{thumbnail.title}</h4>
+       <div className="flex items-center justify-between pt-4 border-t border-mist/40">
+          <div className="flex items-center gap-3">
+             <div className="w-2 h-2 rounded-full bg-cyan shadow-[0_0_10px_rgba(46,204,113,0.4)]" />
+             <span className="text-[10px] font-black text-ash/60 uppercase tracking-widest">{thumbnail.status}</span>
+          </div>
+          <span className="text-[10px] font-bold text-ash/30">{new Date(thumbnail.created_at).toLocaleDateString()}</span>
        </div>
     </div>
   </motion.div>

@@ -23,7 +23,7 @@ const BOTTOM_NAV_ITEMS = [
 
 export const BottomNav: React.FC<BottomNavProps> = ({ currentView }) => {
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-mist z-50 px-6 py-2 pb-8 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+    <nav className="mobile-nav-bottom lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-mist z-50 px-6 py-2 pb-8 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
       {BOTTOM_NAV_ITEMS.map((item) => {
         const Icon = item.icon;
         const isActive = currentView === item.id;

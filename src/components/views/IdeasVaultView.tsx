@@ -38,10 +38,11 @@ export const IdeasVaultView: React.FC<IdeasVaultViewProps> = ({ onAddIdea }) => 
   }
   const [searchQuery, setSearchQuery] = React.useState('');
 
-  const filteredIdeas = ideas.filter(idea => 
+  const filteredIdeas = (ideas || []).filter(idea => 
+    idea &&
     !idea.archived && 
     idea.status !== 'Converted' &&
-    idea.title.toLowerCase().includes(searchQuery.toLowerCase())
+    (idea.title || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

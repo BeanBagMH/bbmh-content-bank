@@ -5,20 +5,20 @@ import {
   Copy, 
   Archive, 
   Trash2, 
-  ExternalLink,
-  ChevronRight,
-  Info,
-  PenTool,
-  Palette,
-  Share2,
-  BarChart3,
-  CheckCircle2,
+  ChevronRight, 
+  Info, 
+  PenTool, 
+  Palette, 
+  Share2, 
+  BarChart3, 
+  CheckCircle2, 
   Download
 } from 'lucide-react';
 import { useContentStore } from '../hooks/useContentStore';
 import { cn } from './common/Badge';
 import { toast } from '../hooks/useToast';
 import { ConfirmationModal } from './common/ConfirmationModal';
+import { UrlPreview } from './common/UrlPreview';
 import type { ContentItem, ContentStatus, ContentType, Priority, Platform, ContentCluster } from '../types';
 
 interface DetailPanelProps {
@@ -302,41 +302,33 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
                   <EditorSection label="Visual Direction" value={localItem.visual_direction} onChange={(v: string) => handleLocalUpdate({ visual_direction: v })} placeholder="Aesthetic notes..." />
                   
                   <div className="grid grid-cols-1 gap-8">
-                    <div className="space-y-4">
-                      <label className="text-[10px] font-black text-ash uppercase tracking-widest">Reference URL</label>
-                      <div className="flex gap-4">
-                        <input 
-                          type="url" 
-                          value={localItem.reference_url || ''}
-                          onChange={(e) => handleLocalUpdate({ reference_url: e.target.value })}
-                          placeholder="https://..."
-                          className="flex-1 bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-medium outline-none focus:border-cyan transition-all"
-                        />
-                        {localItem.reference_url && (
-                          <a href={localItem.reference_url} target="_blank" rel="noopener noreferrer" className="p-4 bg-dark text-white rounded-xl hover:bg-cyan transition-all">
-                             <ExternalLink size={18} />
-                          </a>
-                        )}
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-black text-ash uppercase tracking-widest">Reference URL</label>
+                        <div className="flex gap-4">
+                          <input 
+                            type="url" 
+                            value={localItem.reference_url || ''}
+                            onChange={(e) => handleLocalUpdate({ reference_url: e.target.value })}
+                            placeholder="https://..."
+                            className="flex-1 bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-medium outline-none focus:border-cyan transition-all"
+                          />
+                        </div>
+                        {localItem.reference_url && <UrlPreview url={localItem.reference_url} />}
                       </div>
-                    </div>
 
-                    <div className="space-y-4">
-                      <label className="text-[10px] font-black text-ash uppercase tracking-widest">Asset Link</label>
-                      <div className="flex gap-4">
-                        <input 
-                          type="url" 
-                          value={localItem.asset_link || ''}
-                          onChange={(e) => handleLocalUpdate({ asset_link: e.target.value })}
-                          placeholder="https://framer.com/..."
-                          className="flex-1 bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-medium outline-none focus:border-cyan transition-all"
-                        />
-                        {localItem.asset_link && (
-                          <a href={localItem.asset_link} target="_blank" rel="noopener noreferrer" className="p-4 bg-dark text-white rounded-xl hover:bg-cyan transition-all">
-                             <ExternalLink size={18} />
-                          </a>
-                        )}
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-black text-ash uppercase tracking-widest">Asset Link</label>
+                        <div className="flex gap-4">
+                          <input 
+                            type="url" 
+                            value={localItem.asset_link || ''}
+                            onChange={(e) => handleLocalUpdate({ asset_link: e.target.value })}
+                            placeholder="https://framer.com/..."
+                            className="flex-1 bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-medium outline-none focus:border-cyan transition-all"
+                          />
+                        </div>
+                        {localItem.asset_link && <UrlPreview url={localItem.asset_link} />}
                       </div>
-                    </div>
                   </div>
                </div>
              )}
@@ -353,12 +345,8 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
                         placeholder="https://..."
                         className="flex-1 bg-light-grey/50 border border-mist/40 p-4 rounded-xl text-[13px] font-medium outline-none focus:border-cyan transition-all"
                       />
-                      {localItem.published_url && (
-                        <a href={localItem.published_url} target="_blank" rel="noopener noreferrer" className="p-4 bg-dark text-white rounded-xl hover:bg-cyan transition-all">
-                           <ExternalLink size={18} />
-                        </a>
-                      )}
                     </div>
+                    {localItem.published_url && <UrlPreview url={localItem.published_url} />}
                   </div>
                </div>
              )}
