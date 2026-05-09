@@ -15,6 +15,7 @@ import { CampaignsView } from './components/views/CampaignsView';
 import { ThumbnailBankView } from './components/views/ThumbnailBankView';
 import { PerformanceView } from './components/views/PerformanceView';
 import { SettingsView } from './components/views/SettingsView';
+import './deploy-buzzer';
 import { IdeasVaultView } from './components/views/IdeasVaultView';
 import { BottomNav } from './components/layout/BottomNav';
 import { DetailPanel } from './components/DetailPanel';

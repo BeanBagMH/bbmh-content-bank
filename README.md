@@ -1,73 +1,34 @@
-# React + TypeScript + Vite
+# BBMh Content OS — Master Repository
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Welcome to the central strategic hub for BeanBag Media House. This repository manages the Content Bank, Master Planner, and Social Integration engine.
 
-Currently, two official plugins are available:
+## 🚀 Deployment Pipeline
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This project is deployed on **Vercel** and synchronized with **GitHub**. To ensure stability and live site integrity, we follow a strict branching workflow.
 
-## React Compiler
+### The Two-Branch Strategy
+1. **`main`**: The Production Branch. Any code pushed or merged here goes **LIVE** immediately to [bbmh-content-bank.vercel.app](https://bbmh-content-bank.vercel.app).
+2. **`dev`**: The Development Branch. This is where all active building, fixing, and experimentation happens.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### How to Go Live
+When a feature is ready on `dev` and tested on localhost:
+1. Switch to main: `git checkout main`
+2. Merge dev: `git merge dev`
+3. Push to GitHub: `git push origin main`
 
-## Expanding the ESLint configuration
+## 🔑 Environment Configuration
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The following variables MUST be set in the Vercel Dashboard (**Settings > Environment Variables**) for the app to function:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+| Variable | Description |
+| --- | --- |
+| `VITE_SUPABASE_URL` | Your Supabase Project URL |
+| `VITE_SUPABASE_ANON_KEY` | Your Supabase Public API Key |
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🛠 Tech Stack
+- **Framework**: React 19 + Vite
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + Framer Motion
+- **Database/Auth**: Supabase
+- **Icons**: Lucide React
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
