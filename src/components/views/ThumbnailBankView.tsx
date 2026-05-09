@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image as ImageIcon, Plus, Maximize2, Download, X } from 'lucide-react';
+import { Image as ImageIcon, Plus, Maximize2, Download, X, Trash2 } from 'lucide-react';
 import type { ThumbnailAsset, ContentItem } from '../../types';
 import { useContentStore } from '../../hooks/useContentStore';
 import { toast } from '../../hooks/useToast';
@@ -11,9 +11,21 @@ interface ThumbnailBankViewProps {
 }
 
 export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails, items }) => {
-  const { addThumbnail, uploadAsset } = useContentStore();
+  const { addThumbnail, uploadAsset, deleteThumbnail } = useContentStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const handleDelete = async (thumb: ThumbnailAsset) => {
+    if (window.confirm('Archival Warning: Are you sure you want to delete this strategic asset? This action is permanent.')) {
+      const toastId = toast.loading('Removing asset...');
+      try {
+        await deleteThumbnail(thumb.id, thumb.image_url);
+        toast.success('Asset removed from cloud', { id: toastId });
+      } catch (err: any) {
+        toast.error(`Removal failed: ${err.message}`, { id: toastId });
+      }
+    }
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,6 +80,7 @@ export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails
               thumbnail={thumb} 
               parentItem={items.find(i => i.id === thumb.related_content_id)}
               onMaximize={() => setSelectedImage(thumb.image_url)}
+              onDelete={() => handleDelete(thumb)}
             />
           ))
         ) : (
@@ -106,7 +119,7 @@ export const ThumbnailBankView: React.FC<ThumbnailBankViewProps> = ({ thumbnails
   );
 };
 
-const ThumbnailCard = ({ thumbnail, parentItem, onMaximize }: { thumbnail: ThumbnailAsset, parentItem?: ContentItem, onMaximize: () => void }) => (
+const ThumbnailCard = ({ thumbnail, parentItem, onMaximize, onDelete }: { thumbnail: ThumbnailAsset, parentItem?: ContentItem, onMaximize: () => void, onDelete: () => void }) => (
   <motion.div 
     whileHover={{ y: -8 }}
     className="group relative bg-white border border-mist rounded-[32px] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-dark/5 transition-all"
@@ -120,22 +133,28 @@ const ThumbnailCard = ({ thumbnail, parentItem, onMaximize }: { thumbnail: Thumb
          </div>
        )}
        
-       <div className="absolute inset-0 bg-dark/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+       <div className="absolute inset-0 bg-dark/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
           <button 
             onClick={(e) => { e.stopPropagation(); onMaximize(); }}
-            className="p-4 bg-white rounded-2xl text-dark hover:bg-cyan hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-300"
+            className="p-3 bg-white rounded-xl text-dark hover:bg-cyan hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-300"
           >
-             <Maximize2 size={20} />
+             <Maximize2 size={18} />
           </button>
           <a 
             href={thumbnail.image_url || '#'} 
             download 
             target="_blank" 
             rel="noreferrer"
-            className="p-4 bg-white rounded-2xl text-dark hover:bg-cyan hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-300 delay-75"
+            className="p-3 bg-white rounded-xl text-dark hover:bg-cyan hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-300 delay-75"
           >
-             <Download size={20} />
+             <Download size={18} />
           </a>
+          <button 
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            className="p-3 bg-white rounded-xl text-red-500 hover:bg-red-500 hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-300 delay-100"
+          >
+             <Trash2 size={18} />
+          </button>
        </div>
     </div>
 

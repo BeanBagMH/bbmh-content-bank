@@ -354,5 +354,17 @@ export const db = {
       .getPublicUrl(data.path);
       
     return urlData.publicUrl;
+  },
+
+  async deleteFile(bucket: string, path: string) {
+    if (!supabase) throw new Error('Database not configured');
+    const { error } = await supabase.storage
+      .from(bucket)
+      .remove([path]);
+      
+    if (error) {
+      console.error('Storage delete error:', error);
+      throw error;
+    }
   }
 };

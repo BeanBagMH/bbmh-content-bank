@@ -208,8 +208,21 @@ export function useContentStore() {
     }
   };
 
-  const deleteThumbnail = async (id: string) => {
+  const deleteThumbnail = async (id: string, imageUrl?: string) => {
     try {
+      // 1. If imageUrl exists, try to delete from storage first
+      if (imageUrl) {
+        try {
+          const fileName = imageUrl.split('/').pop();
+          if (fileName) {
+            await db.deleteFile('thumbnails', fileName);
+          }
+        } catch (err) {
+          console.warn('Storage deletion failed, continuing with DB removal:', err);
+        }
+      }
+      
+      // 2. Delete DB record
       await db.deleteThumbnailAsset(id);
       setThumbnails(prev => prev.filter(t => t.id !== id));
     } catch (err: any) {
