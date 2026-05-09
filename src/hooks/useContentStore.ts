@@ -195,12 +195,10 @@ export function useContentStore() {
   // --- Thumbnail Actions ---
   const addThumbnail = async (thumbnail: Partial<ThumbnailAsset>) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Authentication required for strategic archival');
-
+      // Identity guard removed - running in Sanctuary Mode
       const newThumbnail = await db.addThumbnailAsset({
         ...thumbnail,
-        user_id: user.id
+        user_id: '00000000-0000-0000-0000-000000000000'
       } as any);
       setThumbnails(prev => [newThumbnail, ...prev]);
       return newThumbnail;
@@ -268,12 +266,10 @@ export function useContentStore() {
 
   const upsertSocialProfile = async (profile: any) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-      
+      // Identity guard removed - running in Sanctuary Mode
       const updatedSocial = await db.upsertSocialProfile({
         ...profile,
-        user_id: user.id,
+        user_id: '00000000-0000-0000-0000-000000000000',
         updated_at: new Date().toISOString()
       });
       setSocialProfile(updatedSocial);
@@ -282,6 +278,11 @@ export function useContentStore() {
       setError(err.message);
       throw err;
     }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('bbmh_sanctuary_key');
+    window.location.reload();
   };
 
   return {
@@ -306,6 +307,7 @@ export function useContentStore() {
     uploadAsset,
     updateProfile,
     upsertSocialProfile,
+    logout,
     currentProfile,
     socialProfile,
     initialized,
