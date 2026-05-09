@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   BarChart3, 
@@ -9,27 +9,70 @@ import {
   ArrowDown,
   Camera,
   Video,
-  PieChart
+  PieChart,
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 import type { ContentItem } from '../../types';
 import { cn } from '../common/Badge';
 import { useYouTubeStats } from '../../hooks/useYouTubeStats';
 import { useInstagramStats } from '../../hooks/useInstagramStats';
-import { RefreshCw } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 interface PerformanceViewProps {
   items: ContentItem[];
 }
 
 export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
-  const [platformFilter, setPlatformFilter] = React.useState<'All' | 'Instagram' | 'YouTube'>('All');
+  const [platformFilter, setPlatformFilter] = useState<'All' | 'Instagram' | 'YouTube'>('All');
+  const [igRefreshing, setIgRefreshing] = useState(false);
+  const [igRefreshError, setIgRefreshError] = useState<string | null>(null);
+
   const { channel, videos, loading: ytLoading, error: ytError } = useYouTubeStats();
-  const { stats: igStats, loading: igLoading, error: igError, refresh: refreshIG } = useInstagramStats();
+  const { stats: igStats, loading: igLoading, error: igError, refresh: reloadIG, setStats: setIgStats } = useInstagramStats();
   
+  const handleRefreshInstagram = async () => {
+    setIgRefreshing(true);
+    setIgRefreshError(null);
+
+    try {
+      // Call the Edge Function
+      const { data, error } = await supabase.functions.invoke('fetch-ig-stats');
+
+      if (error) {
+        setIgRefreshError(`Function connection error: ${error.message}`);
+        setIgRefreshing(false);
+        return;
+      }
+
+      if (data?.error) {
+        setIgRefreshError(`Instagram API error: ${data.error}`);
+        setIgRefreshing(false);
+        return;
+      }
+
+      // Success — reload the cached data from Supabase
+      const { data: cached, error: fetchError } = await supabase
+        .from('ig_stats_cache')
+        .select('*')
+        .eq('id', 'bbmh_main')
+        .single();
+
+      if (fetchError) {
+        setIgRefreshError(`Sync succeeded but failed to read cache: ${fetchError.message}`);
+      } else if (cached) {
+        setIgStats(cached);
+      }
+    } catch (err: any) {
+      setIgRefreshError(err.message);
+    } finally {
+      setIgRefreshing(false);
+    }
+  };
+
   const publishedItems = items.filter(i => {
     const isPublished = i.status === 'Published';
     if (platformFilter === 'All') return isPublished;
-    // Include MULTI pieces in platform-specific views
     const isMulti = i.platform === 'MULTI' || i.platform === 'Multi-platform' || i.platform === 'Multi';
     return isPublished && (i.platform === platformFilter || isMulti);
   });
@@ -43,11 +86,9 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
     };
   }, { views: 0, likes: 0, leads: 0, shares: 0 });
 
-  // YouTube specific stats
   const ytReach = channel?.totalViews || 0;
   const ytEngagement = videos.reduce((a, v) => a + v.likes + v.comments, 0);
   
-  // Display stats based on filter
   const displayStats = {
     reach: platformFilter === 'YouTube' ? ytReach : (platformFilter === 'All' ? totalStats.views + ytReach : totalStats.views),
     engagement: platformFilter === 'YouTube' ? ytEngagement : (platformFilter === 'All' ? totalStats.likes + ytEngagement : totalStats.likes),
@@ -58,7 +99,29 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
   };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 pb-24">
+      {/* YouTube Diagnostic */}
+      {platformFilter === 'YouTube' && !import.meta.env.VITE_YOUTUBE_API_KEY && (
+        <div className="bg-yt/5 border border-yt/20 rounded-3xl p-6 flex items-center gap-4 text-yt animate-pulse">
+          <AlertCircle size={24} />
+          <div className="flex-1">
+            <div className="text-sm font-black uppercase tracking-widest">YouTube API Key Missing</div>
+            <div className="text-[11px] font-bold opacity-60">Add VITE_YOUTUBE_API_KEY to Vercel and redeploy to see live channel stats.</div>
+          </div>
+        </div>
+      )}
+
+      {/* Instagram Diagnostic */}
+      {platformFilter === 'Instagram' && igRefreshError && (
+        <div className="bg-red-500/5 border border-red-500/20 rounded-3xl p-6 flex items-center gap-4 text-red-500">
+          <AlertCircle size={24} />
+          <div className="flex-1">
+            <div className="text-sm font-black uppercase tracking-widest">Instagram Sync Failed</div>
+            <div className="text-[11px] font-bold opacity-60">{igRefreshError}</div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
            <h2 className="text-5xl lg:text-7xl font-display font-bold text-dark tracking-tighter mb-4 italic-serif">Strategic Intelligence</h2>
@@ -89,7 +152,6 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
         </div>
       </div>
 
-      {/* Hero Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
         <StatCard 
           label={platformFilter === 'YouTube' ? "Channel Views" : platformFilter === 'Instagram' ? "IG Followers" : "Total Reach"} 
@@ -119,7 +181,6 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Leaderboard */}
         <div className="xl:col-span-2 bg-white border border-mist rounded-[40px] overflow-hidden shadow-sm flex flex-col">
           <div className="p-8 lg:p-10 border-b border-mist flex justify-between items-center bg-light-grey/10">
              <h3 className="text-xl font-display font-bold text-dark tracking-tight">
@@ -128,12 +189,12 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
              <div className="flex items-center gap-6">
                 {platformFilter === 'Instagram' && (
                   <button 
-                    onClick={refreshIG}
-                    disabled={igLoading}
+                    onClick={handleRefreshInstagram}
+                    disabled={igRefreshing}
                     className="flex items-center gap-2 px-4 py-2 bg-ig/10 text-ig rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-ig hover:text-white transition-all disabled:opacity-50"
                   >
-                    <RefreshCw size={12} className={cn(igLoading && "animate-spin")} />
-                    Refresh
+                    <RefreshCw size={12} className={cn(igRefreshing && "animate-spin")} />
+                    {igRefreshing ? 'Syncing...' : 'Refresh'}
                   </button>
                 )}
                 <div className="flex items-center gap-2 text-[10px] font-bold text-ash/40 uppercase tracking-widest">
@@ -183,7 +244,7 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
                   <div className="py-24 text-center">
                     <p className="text-ash/40 text-sm italic mb-6">No Instagram data cached yet.</p>
                     <button 
-                      onClick={refreshIG}
+                      onClick={handleRefreshInstagram}
                       className="px-8 py-4 bg-ig text-white rounded-xl text-[11px] font-black uppercase tracking-[0.2em] shadow-lg shadow-ig/20 hover:scale-105 transition-all"
                     >
                       Connect & Fetch Stats
@@ -279,7 +340,6 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
           </div>
         </div>
 
-        {/* Platform Breakdown Elevation */}
         <div className="bg-dark text-white p-10 rounded-[40px] shadow-2xl flex flex-col justify-between relative overflow-hidden group">
            <div className="absolute top-0 right-0 w-64 h-64 bg-cyan/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-cyan/20 transition-all duration-700" />
            
