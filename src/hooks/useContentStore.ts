@@ -195,11 +195,7 @@ export function useContentStore() {
   // --- Thumbnail Actions ---
   const addThumbnail = async (thumbnail: Partial<ThumbnailAsset>) => {
     try {
-      // Identity guard removed - running in Sanctuary Mode
-      const newThumbnail = await db.addThumbnailAsset({
-        ...thumbnail,
-        user_id: '00000000-0000-0000-0000-000000000000'
-      } as any);
+      const newThumbnail = await db.addThumbnailAsset(thumbnail as ThumbnailAsset);
       setThumbnails(prev => [newThumbnail, ...prev]);
       return newThumbnail;
     } catch (err: any) {
@@ -266,10 +262,8 @@ export function useContentStore() {
 
   const upsertSocialProfile = async (profile: any) => {
     try {
-      // Identity guard removed - running in Sanctuary Mode
       const updatedSocial = await db.upsertSocialProfile({
         ...profile,
-        user_id: '00000000-0000-0000-0000-000000000000',
         updated_at: new Date().toISOString()
       });
       setSocialProfile(updatedSocial);
