@@ -195,7 +195,13 @@ export function useContentStore() {
   // --- Thumbnail Actions ---
   const addThumbnail = async (thumbnail: Partial<ThumbnailAsset>) => {
     try {
-      const newThumbnail = await db.addThumbnailAsset(thumbnail);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Authentication required for strategic archival');
+
+      const newThumbnail = await db.addThumbnailAsset({
+        ...thumbnail,
+        user_id: user.id
+      } as any);
       setThumbnails(prev => [newThumbnail, ...prev]);
       return newThumbnail;
     } catch (err: any) {
