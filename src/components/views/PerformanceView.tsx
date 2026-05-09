@@ -24,7 +24,9 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
   const publishedItems = items.filter(i => {
     const isPublished = i.status === 'Published';
     if (platformFilter === 'All') return isPublished;
-    return isPublished && i.platform === platformFilter;
+    // Include MULTI pieces in platform-specific views
+    const isMulti = i.platform === 'MULTI' || i.platform === 'Multi-platform' || i.platform === 'Multi';
+    return isPublished && (i.platform === platformFilter || isMulti);
   });
   
   const totalStats = publishedItems.reduce((acc, item) => {
@@ -156,7 +158,19 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
                  <PlatformProgress label="YouTube" value={items.filter(i => i.platform === 'YouTube').length} total={items.length} color="yt" />
                  <PlatformProgress label="LinkedIn" value={items.filter(i => i.platform === 'LinkedIn').length} total={items.length} color="cyan" />
                  <PlatformProgress label="Twitter/X" value={items.filter(i => i.platform === 'Twitter/X').length} total={items.length} color="cyan" />
-                 <PlatformProgress label="Other" value={items.filter(i => !['Instagram', 'YouTube', 'LinkedIn', 'Twitter/X'].includes(i.platform)).length} total={items.length} color="cyan" />
+                 <PlatformProgress 
+                   label="Cross-platform" 
+                   value={items.filter(i => ['MULTI', 'Multi-platform', 'Multi'].includes(i.platform)).length} 
+                   total={items.length} 
+                   color="cyan" 
+                   note="Synced across ecosystem"
+                 />
+                 <PlatformProgress 
+                   label="Other" 
+                   value={items.filter(i => !['Instagram', 'YouTube', 'LinkedIn', 'Twitter/X', 'MULTI', 'Multi-platform', 'Multi'].includes(i.platform)).length} 
+                   total={items.length} 
+                   color="cyan" 
+                 />
              </div>
            </div>
 
@@ -173,12 +187,15 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
   );
 };
 
-const PlatformProgress = ({ label, value, total, color }: any) => {
+const PlatformProgress = ({ label, value, total, color, note }: any) => {
   const percentage = total > 0 ? (value / total) * 100 : 0;
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-baseline">
-        <span className="text-[11px] font-bold uppercase tracking-widest text-white/60">{label}</span>
+        <div className="flex flex-col">
+          <span className="text-[11px] font-bold uppercase tracking-widest text-white/60">{label}</span>
+          {note && <span className="text-[8px] font-medium text-cyan/60 uppercase tracking-tighter mt-0.5">{note}</span>}
+        </div>
         <span className="text-sm font-bold text-white">{value} pieces</span>
       </div>
       <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">

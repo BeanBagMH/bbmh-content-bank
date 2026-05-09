@@ -184,6 +184,16 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({ selectedId, onClose, i
                <ActionButton onClick={handleDuplicate} icon={Copy} title="Duplicate" />
                <ActionButton onClick={handleArchive} icon={Archive} title="Archive" />
                <ActionButton onClick={handleDelete} icon={Trash2} title="Delete" className="hover:text-red-500 hover:bg-red-50" />
+               
+               <div className="hidden md:block h-6 w-px bg-mist mx-2" />
+               
+               <button 
+                onClick={onClose}
+                className="hidden md:flex p-2 text-ash/40 hover:text-dark transition-colors border border-mist/50 rounded-lg"
+                title="Close Panel"
+               >
+                 <X size={18} />
+               </button>
             </div>
           </div>
 
