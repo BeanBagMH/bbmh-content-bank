@@ -19,7 +19,7 @@ export const GridView: React.FC<GridViewProps> = ({ items, onCardClick }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.05 }}
           onClick={() => onCardClick(item.id)}
-          className="group bg-white border border-mist rounded-3xl p-6 hover:border-cyan/40 hover:shadow-xl hover:shadow-dark/5 transition-all cursor-pointer flex flex-col h-full"
+          className="group relative bg-white border border-mist rounded-3xl p-6 hover:border-cyan/40 hover:shadow-xl hover:shadow-dark/5 transition-all cursor-pointer flex flex-col h-full"
         >
           {/* Top Metadata */}
           <div className="flex items-center justify-between mb-6">
@@ -42,7 +42,7 @@ export const GridView: React.FC<GridViewProps> = ({ items, onCardClick }) => {
             {item.hook || item.notes || "No strategy snippet provided yet..."}
           </p>
 
-          <div className="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 rounded-3xl pointer-events-none group-hover:pointer-events-none">
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 backdrop-blur-[2px] transition-opacity flex items-center justify-center gap-4 rounded-3xl pointer-events-none group-hover:pointer-events-none">
              <button 
                onClick={(e) => {
                  e.stopPropagation();

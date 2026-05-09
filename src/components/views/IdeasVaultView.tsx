@@ -54,7 +54,7 @@ export const IdeasVaultView: React.FC<IdeasVaultViewProps> = ({ onAddIdea }) => 
              <h2 className="text-7xl font-display font-bold text-dark tracking-tighter italic-serif leading-none">
                Ideas Vault
              </h2>
-             <span className="text-3xl font-display text-ash/30 font-bold">{ideas.length.toString().padStart(2, '0')}</span>
+             <span className="text-3xl font-display text-ash/30 font-bold">{(ideas?.length || 0).toString().padStart(2, '0')}</span>
           </div>
           <p className="text-ash/70 text-[11px] font-bold uppercase tracking-[0.4em]">Raw Brain Dumps & Sparking Concepts</p>
         </div>

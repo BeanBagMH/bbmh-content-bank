@@ -24,7 +24,7 @@ const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'planner', label: 'Master Planner', icon: Layout },
   { id: 'content-bank', label: 'Content Bank', icon: Database },
-  { id: 'ideas-vault', label: 'Ideas Vault', icon: Lightbulb },
+  { id: 'ideas', label: 'Ideas Vault', icon: Lightbulb },
   { id: 'calendar', label: 'Calendar', icon: Calendar },
   { id: 'campaigns', label: 'Campaigns', icon: Flag },
   { id: 'scripts', label: 'Scripts', icon: FileText },

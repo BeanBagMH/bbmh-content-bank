@@ -152,9 +152,11 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
            <div className="relative z-10">
              <h3 className="text-2xl font-display font-bold mb-8">Platform Velocity</h3>
              <div className="space-y-10">
-                <PlatformProgress label="Instagram" value={items.filter(i => i.platform === 'Instagram').length} total={items.length} color="ig" />
-                <PlatformProgress label="YouTube" value={items.filter(i => i.platform === 'YouTube').length} total={items.length} color="yt" />
-                <PlatformProgress label="Other" value={items.filter(i => i.platform !== 'Instagram' && i.platform !== 'YouTube').length} total={items.length} color="cyan" />
+                 <PlatformProgress label="Instagram" value={items.filter(i => i.platform === 'Instagram').length} total={items.length} color="ig" />
+                 <PlatformProgress label="YouTube" value={items.filter(i => i.platform === 'YouTube').length} total={items.length} color="yt" />
+                 <PlatformProgress label="LinkedIn" value={items.filter(i => i.platform === 'LinkedIn').length} total={items.length} color="cyan" />
+                 <PlatformProgress label="Twitter/X" value={items.filter(i => i.platform === 'Twitter/X').length} total={items.length} color="cyan" />
+                 <PlatformProgress label="Other" value={items.filter(i => !['Instagram', 'YouTube', 'LinkedIn', 'Twitter/X'].includes(i.platform)).length} total={items.length} color="cyan" />
              </div>
            </div>
 
