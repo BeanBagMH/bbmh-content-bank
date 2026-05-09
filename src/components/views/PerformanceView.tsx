@@ -14,6 +14,8 @@ import {
 import type { ContentItem } from '../../types';
 import { cn } from '../common/Badge';
 import { useYouTubeStats } from '../../hooks/useYouTubeStats';
+import { useInstagramStats } from '../../hooks/useInstagramStats';
+import { RefreshCw } from 'lucide-react';
 
 interface PerformanceViewProps {
   items: ContentItem[];
@@ -22,6 +24,7 @@ interface PerformanceViewProps {
 export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
   const [platformFilter, setPlatformFilter] = React.useState<'All' | 'Instagram' | 'YouTube'>('All');
   const { channel, videos, loading: ytLoading, error: ytError } = useYouTubeStats();
+  const { stats: igStats, loading: igLoading, error: igError, refresh: refreshIG } = useInstagramStats();
   
   const publishedItems = items.filter(i => {
     const isPublished = i.status === 'Published';
@@ -88,10 +91,31 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
 
       {/* Hero Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-        <StatCard label={platformFilter === 'YouTube' ? "Channel Views" : "Total Reach"} value={displayStats.reach} icon={TrendingUp} trend="+12.5%" isPositive={true} color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} />
-        <StatCard label="Engagement" value={displayStats.engagement} icon={Users} trend="+8.2%" isPositive={true} color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} />
-        <StatCard label={platformFilter === 'YouTube' ? "Videos Live" : "Conversions"} value={platformFilter === 'YouTube' ? displayStats.videoCount : displayStats.conversions} icon={platformFilter === 'YouTube' ? Video : Target} trend="-2.1%" isPositive={false} color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} />
-        <StatCard label={platformFilter === 'YouTube' ? "Subscribers" : "Virality"} value={platformFilter === 'YouTube' ? displayStats.subscribers : displayStats.virality} icon={platformFilter === 'YouTube' ? Users : BarChart3} trend="+24.0%" isPositive={true} color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} />
+        <StatCard 
+          label={platformFilter === 'YouTube' ? "Channel Views" : platformFilter === 'Instagram' ? "IG Followers" : "Total Reach"} 
+          value={platformFilter === 'Instagram' ? (igStats?.followers || 0) : displayStats.reach} 
+          icon={TrendingUp} trend="+12.5%" isPositive={true} 
+          color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} 
+        />
+        <StatCard 
+          label="Engagement" 
+          value={platformFilter === 'Instagram' ? (igStats?.posts?.reduce((a:any,p:any)=>a+(p.like_count||0),0) || 0) : displayStats.engagement} 
+          icon={Users} trend="+8.2%" isPositive={true} 
+          color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} 
+        />
+        <StatCard 
+          label={platformFilter === 'YouTube' ? "Videos Live" : platformFilter === 'Instagram' ? "Total Posts" : "Conversions"} 
+          value={platformFilter === 'YouTube' ? displayStats.videoCount : platformFilter === 'Instagram' ? (igStats?.media_count || 0) : displayStats.conversions} 
+          icon={platformFilter === 'YouTube' ? Video : platformFilter === 'Instagram' ? Camera : Target} trend="-2.1%" isPositive={false} 
+          color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} 
+        />
+        <StatCard 
+          label={platformFilter === 'YouTube' ? "Subscribers" : platformFilter === 'Instagram' ? "Last Synced" : "Virality"} 
+          value={platformFilter === 'YouTube' ? displayStats.subscribers : platformFilter === 'Instagram' ? 0 : displayStats.virality} 
+          customValue={platformFilter === 'Instagram' ? (igStats?.fetched_at ? new Date(igStats.fetched_at).toLocaleDateString('en-IN', {day:'numeric', month:'short'}) : 'N/A') : undefined}
+          icon={platformFilter === 'YouTube' ? Users : BarChart3} trend="+24.0%" isPositive={true} 
+          color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} 
+        />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -99,11 +123,23 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
         <div className="xl:col-span-2 bg-white border border-mist rounded-[40px] overflow-hidden shadow-sm flex flex-col">
           <div className="p-8 lg:p-10 border-b border-mist flex justify-between items-center bg-light-grey/10">
              <h3 className="text-xl font-display font-bold text-dark tracking-tight">
-               {platformFilter === 'YouTube' ? 'YouTube Video Performance' : 'Content Leaderboard'}
+               {platformFilter === 'YouTube' ? 'YouTube Video Performance' : platformFilter === 'Instagram' ? 'Instagram Media Performance' : 'Content Leaderboard'}
              </h3>
-             <div className="flex items-center gap-2 text-[10px] font-bold text-ash/40 uppercase tracking-widest">
-                <PieChart size={14} />
-                {platformFilter === 'YouTube' ? 'Live Channel Stats' : 'High Impact Content'}
+             <div className="flex items-center gap-6">
+                {platformFilter === 'Instagram' && (
+                  <button 
+                    onClick={refreshIG}
+                    disabled={igLoading}
+                    className="flex items-center gap-2 px-4 py-2 bg-ig/10 text-ig rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-ig hover:text-white transition-all disabled:opacity-50"
+                  >
+                    <RefreshCw size={12} className={cn(igLoading && "animate-spin")} />
+                    Refresh
+                  </button>
+                )}
+                <div className="flex items-center gap-2 text-[10px] font-bold text-ash/40 uppercase tracking-widest">
+                    <PieChart size={14} />
+                    {platformFilter === 'YouTube' ? 'Live Channel Stats' : platformFilter === 'Instagram' ? 'Live Media Stats' : 'High Impact Content'}
+                </div>
              </div>
           </div>
           
@@ -138,6 +174,51 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
                     </div>
                   ))}
                 </div>
+              </div>
+            ) : platformFilter === 'Instagram' ? (
+              <div className="p-8">
+                {igLoading && <div className="py-12 text-center text-ash/40 animate-pulse uppercase tracking-[0.2em] text-[10px] font-bold">Fetching Live Instagram Stats...</div>}
+                {igError && <div className="py-8 text-center text-red-500 text-[10px] font-bold uppercase tracking-widest">Error: {igError}</div>}
+                {!igStats && !igLoading && !igError && (
+                  <div className="py-24 text-center">
+                    <p className="text-ash/40 text-sm italic mb-6">No Instagram data cached yet.</p>
+                    <button 
+                      onClick={refreshIG}
+                      className="px-8 py-4 bg-ig text-white rounded-xl text-[11px] font-black uppercase tracking-[0.2em] shadow-lg shadow-ig/20 hover:scale-105 transition-all"
+                    >
+                      Connect & Fetch Stats
+                    </button>
+                  </div>
+                )}
+                
+                {igStats && (
+                  <div className="space-y-2">
+                    {igStats.posts?.map((post: any) => (
+                      <div key={post.id} className="flex items-center gap-6 p-6 hover:bg-light-grey/20 rounded-2xl transition-all border border-transparent hover:border-mist/50 group">
+                        <div className="relative flex-shrink-0">
+                          <img src={post.thumbnail_url || post.media_url} className="w-24 h-24 rounded-xl object-cover shadow-lg group-hover:scale-105 transition-transform duration-500" />
+                          <div className="absolute top-2 right-2 bg-dark/60 backdrop-blur-sm text-white text-[7px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                            {post.media_type}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[13px] font-medium text-dark group-hover:text-ig transition-colors line-clamp-2 leading-relaxed mb-2">
+                            {post.caption || "No caption provided"}
+                          </div>
+                          <div className="text-[10px] font-medium text-ash/40 uppercase tracking-widest">
+                            {new Date(post.timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-black text-dark">❤️ {post.like_count?.toLocaleString() || 0}</div>
+                          <div className="text-[10px] font-bold text-ash/40 uppercase tracking-widest mt-1">
+                            💬 {post.comments_count?.toLocaleString() || 0} Comments
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <table className="w-full text-left border-collapse min-w-[600px]">
@@ -264,7 +345,7 @@ const PlatformProgress = ({ label, value, total, color, note }: any) => {
   );
 }
 
-const StatCard = ({ label, value, icon: Icon, trend, isPositive, color = 'cyan' }: { label: string, value: number, icon: any, trend: string, isPositive: boolean, color?: string }) => (
+const StatCard = ({ label, value, icon: Icon, trend, isPositive, color = 'cyan', customValue }: { label: string, value: number, icon: any, trend: string, isPositive: boolean, color?: string, customValue?: string }) => (
   <motion.div 
     whileHover={{ y: -4 }}
     className="bg-white border border-mist p-10 rounded-[32px] shadow-sm relative overflow-hidden"
@@ -285,7 +366,7 @@ const StatCard = ({ label, value, icon: Icon, trend, isPositive, color = 'cyan' 
        </div>
     </div>
     <div className="text-4xl lg:text-5xl font-display font-black text-dark tracking-tighter leading-none mb-3">
-      {value > 999999 ? `${(value / 1000000).toFixed(1)}M` : value > 999 ? `${(value / 1000).toFixed(1)}K` : value}
+      {customValue || (value > 999999 ? `${(value / 1000000).toFixed(1)}M` : value > 999 ? `${(value / 1000).toFixed(1)}K` : value)}
     </div>
     <div className="text-[10px] font-bold text-ash/40 uppercase tracking-widest">{label}</div>
   </motion.div>
