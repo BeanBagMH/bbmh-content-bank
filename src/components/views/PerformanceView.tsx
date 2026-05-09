@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import type { ContentItem } from '../../types';
 import { cn } from '../common/Badge';
+import { useYouTubeStats } from '../../hooks/useYouTubeStats';
 
 interface PerformanceViewProps {
   items: ContentItem[];
@@ -20,6 +21,7 @@ interface PerformanceViewProps {
 
 export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
   const [platformFilter, setPlatformFilter] = React.useState<'All' | 'Instagram' | 'YouTube'>('All');
+  const { channel, videos, loading: ytLoading, error: ytError } = useYouTubeStats();
   
   const publishedItems = items.filter(i => {
     const isPublished = i.status === 'Published';
@@ -37,6 +39,20 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
       shares: acc.shares + (item.shares || 0)
     };
   }, { views: 0, likes: 0, leads: 0, shares: 0 });
+
+  // YouTube specific stats
+  const ytReach = channel?.totalViews || 0;
+  const ytEngagement = videos.reduce((a, v) => a + v.likes + v.comments, 0);
+  
+  // Display stats based on filter
+  const displayStats = {
+    reach: platformFilter === 'YouTube' ? ytReach : (platformFilter === 'All' ? totalStats.views + ytReach : totalStats.views),
+    engagement: platformFilter === 'YouTube' ? ytEngagement : (platformFilter === 'All' ? totalStats.likes + ytEngagement : totalStats.likes),
+    conversions: totalStats.leads,
+    virality: totalStats.shares,
+    subscribers: channel?.subscribers || 0,
+    videoCount: channel?.videoCount || 0
+  };
 
   return (
     <div className="space-y-12">
@@ -72,78 +88,113 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
 
       {/* Hero Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-        <StatCard label="Total Reach" value={totalStats.views} icon={TrendingUp} trend="+12.5%" isPositive={true} color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} />
-        <StatCard label="Engagement" value={totalStats.likes} icon={Users} trend="+8.2%" isPositive={true} color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} />
-        <StatCard label="Conversions" value={totalStats.leads} icon={Target} trend="-2.1%" isPositive={false} color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} />
-        <StatCard label="Virality" value={totalStats.shares} icon={BarChart3} trend="+24.0%" isPositive={true} color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} />
+        <StatCard label={platformFilter === 'YouTube' ? "Channel Views" : "Total Reach"} value={displayStats.reach} icon={TrendingUp} trend="+12.5%" isPositive={true} color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} />
+        <StatCard label="Engagement" value={displayStats.engagement} icon={Users} trend="+8.2%" isPositive={true} color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} />
+        <StatCard label={platformFilter === 'YouTube' ? "Videos Live" : "Conversions"} value={platformFilter === 'YouTube' ? displayStats.videoCount : displayStats.conversions} icon={platformFilter === 'YouTube' ? Video : Target} trend="-2.1%" isPositive={false} color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} />
+        <StatCard label={platformFilter === 'YouTube' ? "Subscribers" : "Virality"} value={platformFilter === 'YouTube' ? displayStats.subscribers : displayStats.virality} icon={platformFilter === 'YouTube' ? Users : BarChart3} trend="+24.0%" isPositive={true} color={platformFilter === 'Instagram' ? 'ig' : platformFilter === 'YouTube' ? 'yt' : 'cyan'} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Leaderboard */}
         <div className="xl:col-span-2 bg-white border border-mist rounded-[40px] overflow-hidden shadow-sm flex flex-col">
           <div className="p-8 lg:p-10 border-b border-mist flex justify-between items-center bg-light-grey/10">
-             <h3 className="text-xl font-display font-bold text-dark tracking-tight">Content Leaderboard</h3>
+             <h3 className="text-xl font-display font-bold text-dark tracking-tight">
+               {platformFilter === 'YouTube' ? 'YouTube Video Performance' : 'Content Leaderboard'}
+             </h3>
              <div className="flex items-center gap-2 text-[10px] font-bold text-ash/40 uppercase tracking-widest">
                 <PieChart size={14} />
-                High Impact Content
+                {platformFilter === 'YouTube' ? 'Live Channel Stats' : 'High Impact Content'}
              </div>
           </div>
           
           <div className="overflow-x-auto flex-1 custom-scrollbar">
-            <table className="w-full text-left border-collapse min-w-[600px]">
-              <thead>
-                <tr className="border-b border-mist/50">
-                  <th className="p-8 text-[10px] font-black text-ash/40 uppercase tracking-widest">Piece Title</th>
-                  <th className="p-8 text-[10px] font-black text-ash/40 uppercase tracking-widest text-center">Views</th>
-                  <th className="p-8 text-[10px] font-black text-ash/40 uppercase tracking-widest text-center">Engagement</th>
-                  <th className="p-8 text-[10px] font-black text-ash/40 uppercase tracking-widest text-center">Leads</th>
-                  <th className="p-8 text-[10px] font-black text-ash/40 uppercase tracking-widest text-right">Momentum</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-mist/30">
-                {publishedItems.length > 0 ? (
-                  publishedItems.slice(0, 10).map((item) => (
-                    <tr key={item.id} className="hover:bg-light-grey/20 transition-all group cursor-pointer">
-                      <td className="p-8">
-                         <div className="text-[14px] font-bold text-dark group-hover:text-cyan transition-colors line-clamp-1">{item.title}</div>
-                         <div className="flex items-center gap-2 mt-1">
-                            {item.platform === 'Instagram' && <Camera size={10} className="text-ig" />}
-                            {item.platform === 'YouTube' && <Video size={10} className="text-yt" />}
-                            <span className="text-[9px] font-bold text-ash/40 uppercase tracking-widest">{item.platform}</span>
-                         </div>
-                      </td>
-                      <td className="p-8 text-center text-sm font-bold text-dark">{(item.views || 0).toLocaleString()}</td>
-                      <td className="p-8 text-center text-sm font-bold text-dark">
-                        {item.views > 0 ? (((item.likes || 0) + (item.comments || 0) + (item.shares || 0)) / item.views * 100).toFixed(1) : 0}%
-                      </td>
-                      <td className="p-8 text-center">
-                         <span className={cn(
-                           "px-3 py-1 rounded-full text-[11px] font-black",
-                           item.leads > 0 ? "bg-turquoise/10 text-cyan" : "bg-ash/5 text-ash/30"
-                         )}>
-                           {item.leads || 0}
-                         </span>
-                      </td>
-                      <td className="p-8 text-right">
-                         <div className={cn(
-                           "flex items-center justify-end gap-2",
-                           item.views > 1000 ? "text-turquoise" : "text-ash/20"
-                         )}>
-                            <TrendingUp size={14} />
-                            <span className="text-[10px] font-black uppercase tracking-widest">{item.views > 1000 ? 'High' : 'Steady'}</span>
-                         </div>
+            {platformFilter === 'YouTube' ? (
+              <div className="p-8">
+                {ytLoading && <div className="py-12 text-center text-ash/40 animate-pulse uppercase tracking-[0.2em] text-[10px] font-bold">Loading Live YouTube Stats...</div>}
+                {ytError && <div className="py-8 text-center text-red-500 text-[10px] font-bold uppercase tracking-widest">Error: {ytError}</div>}
+                
+                <div className="space-y-2">
+                  {videos.map(video => (
+                    <div key={video.id} className="flex items-center gap-6 p-6 hover:bg-light-grey/20 rounded-2xl transition-all border border-transparent hover:border-mist/50 group">
+                      <div className="relative flex-shrink-0">
+                        <img src={video.thumbnail} className="w-32 aspect-video rounded-xl object-cover shadow-lg group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute bottom-2 right-2 bg-dark/80 backdrop-blur-sm text-white text-[8px] font-bold px-2 py-1 rounded">
+                          {video.duration.replace('PT', '').replace('M', ':').replace('S', '')}
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[14px] font-bold text-dark group-hover:text-yt transition-colors line-clamp-2 leading-tight mb-2">{video.title}</div>
+                        <div className="text-[10px] font-medium text-ash/40 uppercase tracking-widest">
+                          {new Date(video.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-black text-dark">{video.views.toLocaleString()} <span className="text-[9px] font-bold text-ash/40 uppercase tracking-tighter">Views</span></div>
+                        <div className="flex items-center justify-end gap-3 mt-1">
+                          <span className="text-[10px] font-bold text-ash/30">❤️ {video.likes.toLocaleString()}</span>
+                          <span className="text-[10px] font-bold text-ash/30">💬 {video.comments.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <table className="w-full text-left border-collapse min-w-[600px]">
+                <thead>
+                  <tr className="border-b border-mist/50">
+                    <th className="p-8 text-[10px] font-black text-ash/40 uppercase tracking-widest">Piece Title</th>
+                    <th className="p-8 text-[10px] font-black text-ash/40 uppercase tracking-widest text-center">Views</th>
+                    <th className="p-8 text-[10px] font-black text-ash/40 uppercase tracking-widest text-center">Engagement</th>
+                    <th className="p-8 text-[10px] font-black text-ash/40 uppercase tracking-widest text-center">Leads</th>
+                    <th className="p-8 text-[10px] font-black text-ash/40 uppercase tracking-widest text-right">Momentum</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-mist/30">
+                  {publishedItems.length > 0 ? (
+                    publishedItems.slice(0, 10).map((item) => (
+                      <tr key={item.id} className="hover:bg-light-grey/20 transition-all group cursor-pointer">
+                        <td className="p-8">
+                           <div className="text-[14px] font-bold text-dark group-hover:text-cyan transition-colors line-clamp-1">{item.title}</div>
+                           <div className="flex items-center gap-2 mt-1">
+                              {item.platform === 'Instagram' && <Camera size={10} className="text-ig" />}
+                              {item.platform === 'YouTube' && <Video size={10} className="text-yt" />}
+                              <span className="text-[9px] font-bold text-ash/40 uppercase tracking-widest">{item.platform}</span>
+                           </div>
+                        </td>
+                        <td className="p-8 text-center text-sm font-bold text-dark">{(item.views || 0).toLocaleString()}</td>
+                        <td className="p-8 text-center text-sm font-bold text-dark">
+                          {item.views > 0 ? (((item.likes || 0) + (item.comments || 0) + (item.shares || 0)) / item.views * 100).toFixed(1) : 0}%
+                        </td>
+                        <td className="p-8 text-center">
+                           <span className={cn(
+                             "px-3 py-1 rounded-full text-[11px] font-black",
+                             item.leads > 0 ? "bg-turquoise/10 text-cyan" : "bg-ash/5 text-ash/30"
+                           )}>
+                             {item.leads || 0}
+                           </span>
+                        </td>
+                        <td className="p-8 text-right">
+                           <div className={cn(
+                             "flex items-center justify-end gap-2",
+                             item.views > 1000 ? "text-turquoise" : "text-ash/20"
+                           )}>
+                              <TrendingUp size={14} />
+                              <span className="text-[10px] font-black uppercase tracking-widest">{item.views > 1000 ? 'High' : 'Steady'}</span>
+                           </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="p-32 text-center text-ash/40 italic font-medium">
+                        Deploy content pieces to begin tracking performance intelligence.
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="p-32 text-center text-ash/40 italic font-medium">
-                      Deploy content pieces to begin tracking performance intelligence.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
 
@@ -177,9 +228,9 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
            <div className="mt-12 p-8 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-xl relative z-10">
               <div className="text-[10px] font-black text-cyan uppercase tracking-[0.3em] mb-2">Primary Driver</div>
               <div className="text-2xl font-display font-bold">
-                {items.filter(i => i.platform === 'Instagram').length > items.filter(i => i.platform === 'YouTube').length ? 'Instagram' : 'YouTube'}
+                {items.filter(i => i.platform === 'Instagram').length > (channel?.videoCount || 0) ? 'Instagram' : 'YouTube'}
               </div>
-              <p className="text-[11px] text-white/40 mt-2 leading-relaxed">This platform is currently driving 60% of your total ecosystem reach.</p>
+              <p className="text-[11px] text-white/40 mt-2 leading-relaxed">This platform is currently driving a significant portion of your total ecosystem reach.</p>
            </div>
         </div>
       </div>
