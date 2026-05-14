@@ -142,7 +142,7 @@ export default function App() {
   const itemCounts = {
     'dashboard': scripts.length,
     'content-bank': scripts.length,
-    'ideas-vault': scripts.filter(s => s.status === 'idea').length,
+    'ideas': scripts.filter(s => s.status === 'idea').length,
     'calendar': calendarPosts.length,
     'campaigns': campaigns.length,
     'scripts': scripts.length,

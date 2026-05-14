@@ -41,6 +41,8 @@ export function useContentStore() {
         db.getPublishingFlow().catch(() => [])
       ]);
       
+      console.log('BBMh OS Sync:', { sourcesData, scriptsData, calendarData, flowData });
+      
       setSources(sourcesData);
       setScripts(scriptsData);
       setCalendarPosts(calendarData);
@@ -48,14 +50,13 @@ export function useContentStore() {
       
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Assume profiles are loaded similarly if needed
-        // For now, ignore full profile fetch safely
+        console.log('Authenticated User:', user.email);
       }
       
       setInitialized(true);
       setLoading(false);
     } catch (err: any) {
-      console.error('Fetch error:', err);
+      console.error('BBMh Sync Error:', err);
       setError(err.message);
       setLoading(false);
       setInitialized(true);
