@@ -72,7 +72,7 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ items }) => {
   };
 
   const publishedItems = items.filter(i => {
-    const isPublished = i.status === 'Published';
+    const isPublished = i.status === 'Published' || i.status === 'published';
     if (platformFilter === 'All') return isPublished;
     const isMulti = i.platform === 'MULTI' || i.platform === 'Multi-platform' || i.platform === 'Multi';
     return isPublished && (i.platform === platformFilter || isMulti);

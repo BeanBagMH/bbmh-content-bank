@@ -202,7 +202,7 @@ export default function App() {
               transition={{ duration: 0.2 }}
             >
               <Routes>
-                <Route path="/" element={<DashboardView calendarPosts={calendarPosts} setView={setView} />} />
+                <Route path="/" element={<DashboardView items={items} setView={setView} />} />
                 <Route path="/planner" element={
                   <BoardView 
                     items={filteredItems} 
@@ -234,15 +234,15 @@ export default function App() {
                     }}
                   />
                 } />
-                <Route path="/campaigns" element={<CampaignsView campaigns={campaigns} calendarPosts={calendarPosts} />} />
+                <Route path="/campaigns" element={<CampaignsView campaigns={campaigns} items={items} />} />
                 <Route path="/scripts" element={
                   <ScriptsView 
-                    calendarPosts={calendarPosts} 
+                    items={items} 
                     onCardClick={(id) => openDetail(id, 'writing')} 
                   />
                 } />
-                <Route path="/thumbnails" element={<ThumbnailBankView thumbnails={thumbnails} calendarPosts={calendarPosts} />} />
-                <Route path="/performance" element={<PerformanceView calendarPosts={calendarPosts} />} />
+                <Route path="/thumbnails" element={<ThumbnailBankView thumbnails={thumbnails} items={items} />} />
+                <Route path="/performance" element={<PerformanceView items={items} />} />
                 <Route path="/settings" element={<SettingsView />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
