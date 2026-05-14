@@ -30,13 +30,18 @@ import "yet-another-react-lightbox/styles.css";
 
 export default function App() {
   const { 
-    items, 
-    ideas, 
-    campaigns, 
-    thumbnails, 
+    scripts,
+    calendarPosts,
+    publishingFlow,
+    campaigns,
     initialized,
     loading 
   } = useContentStore();
+
+  // Legacy mappings for backwards compatibility during transition
+  const items = scripts;
+  const ideas = scripts.filter(s => s.status === 'idea');
+  const thumbnails = []; // To be implemented with content_assets
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -135,12 +140,14 @@ export default function App() {
   }, [items, filter]);
 
   const itemCounts = {
-    'dashboard': items.length,
-    'content-bank': items.length,
-    'ideas-vault': ideas.length,
+    'dashboard': scripts.length,
+    'content-bank': scripts.length,
+    'ideas-vault': scripts.filter(s => s.status === 'idea').length,
+    'calendar': calendarPosts.length,
     'campaigns': campaigns.length,
-    'thumbnails': thumbnails.length,
-    'performance': items.filter(i => i.status === 'Published').length,
+    'scripts': scripts.length,
+    'thumbnails': 0,
+    'performance': scripts.filter(s => s.status === 'published').length,
   };
 
   // Search Navigation Guard: Auto-switch to Content Bank when searching

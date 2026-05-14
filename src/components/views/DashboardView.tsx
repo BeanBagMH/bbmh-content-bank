@@ -27,7 +27,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ items, setView }) 
   }
   const stats = React.useMemo(() => {
     const statusCounts = items.reduce((acc: any, item) => {
-      acc[item.status] = (acc[item.status] || 0) + 1;
+      const status = item.status || 'Draft';
+      acc[status] = (acc[status] || 0) + 1;
       return acc;
     }, {});
 
@@ -39,9 +40,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ items, setView }) 
     return {
       total: items.length,
       topStatuses: sortedStatuses,
-      ready: items.filter(i => i.status === 'Review' || i.status === 'Scheduled').length,
-      stuck: items.filter(i => i.priority === 'High' && i.status !== 'Published').length,
-      ideasCount: items.filter(i => i.status === 'Raw Idea').length
+      ready: items.filter(i => ['Review', 'Scheduled', 'published', 'Published'].includes(i.status)).length,
+      stuck: items.filter(i => i.priority === 'High' && i.status !== 'Published' && i.status !== 'published').length,
+      ideasCount: items.filter(i => i.status === 'Raw Idea' || i.status === 'idea').length
     };
   }, [items]);
 
@@ -154,7 +155,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ items, setView }) 
           title="Format Mix"
         >
           <div className="mt-8 space-y-4">
-             {['Reel', 'Carousel', 'LinkedIn Post', 'Blog'].map(type => {
+             {['deep_reel', 'mirror', 'frame', 'question', 'Carousel', 'LinkedIn Post'].map(type => {
                const count = items.filter(i => i.content_type === type).length;
                const percentage = items.length ? (count / items.length) * 100 : 0;
                return (

@@ -91,8 +91,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ userEmail }) => {
     <div className="space-y-12 pb-40 lg:pb-0">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-           <h2 className="text-5xl lg:text-7xl font-display font-bold text-dark tracking-tighter mb-4 italic-serif">Setup & Preferences</h2>
-           <p className="text-ash/60 text-[11px] font-bold uppercase tracking-[0.4em]">System Configuration & Workspace Settings</p>
+           <h2 className="text-5xl lg:text-7xl font-display font-bold text-dark tracking-tighter mb-4 italic-serif">Strategic Sanctuary</h2>
+           <p className="text-ash/60 text-[11px] font-bold uppercase tracking-[0.4em]">Content OS V4.0.0-PRO • Master Configuration</p>
         </div>
       </div>
 
@@ -232,7 +232,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ userEmail }) => {
                  >
                    Export JSON
                  </button>
-                 <button className="flex-1 py-5 border border-red-100 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">Reset OS</button>
+                 <button 
+                   onClick={() => {
+                     if (window.confirm('CRITICAL ACTION: This will prepare the system for a full V4.0.0-PRO content reset. To complete the reset, you must run the MIGRATION_CONTENT_RESET_AND_IMPORT.sql script in your Supabase SQL editor. Proceed to copy the instructions?')) {
+                        toast.success('Migration script prepared. Please execute it in Supabase.');
+                        window.open('https://app.supabase.com', '_blank');
+                     }
+                   }}
+                   className="flex-1 py-5 border border-red-100 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all"
+                 >
+                   Initialize V4 PRO Reset
+                 </button>
               </div>
            </section>
         </div>
