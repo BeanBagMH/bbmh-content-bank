@@ -118,3 +118,24 @@ CREATE TRIGGER update_content_items_updated_at BEFORE UPDATE ON content_items FO
 CREATE TRIGGER update_ideas_updated_at BEFORE UPDATE ON ideas FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 CREATE TRIGGER update_campaigns_updated_at BEFORE UPDATE ON campaigns FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 CREATE TRIGGER update_thumbnail_assets_updated_at BEFORE UPDATE ON thumbnail_assets FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+
+-- 9. Explicit Data API Access Grants (Required for Supabase post May 30, 2026)
+GRANT SELECT ON public.content_items TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.content_items TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.content_items TO service_role;
+
+GRANT SELECT ON public.ideas TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ideas TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ideas TO service_role;
+
+GRANT SELECT ON public.campaigns TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.campaigns TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.campaigns TO service_role;
+
+GRANT SELECT ON public.thumbnail_assets TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.thumbnail_assets TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.thumbnail_assets TO service_role;
+
+GRANT SELECT ON public.workspace_settings TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.workspace_settings TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.workspace_settings TO service_role;
