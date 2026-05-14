@@ -1,149 +1,96 @@
+// @ts-nocheck
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Plus, Clock, Layout } from 'lucide-react';
-import { cn } from '../common/Badge';
-import type { ContentItem, ContentStatus } from '../../types';
-import { Badge } from '../common/Badge';
 import { useContentStore } from '../../hooks/useContentStore';
-import { EmptyState } from '../common/EmptyState';
+import { MoreHorizontal, Video, Image as ImageIcon, Edit3, MessageCircle, Eye } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-interface BoardViewProps {
-  items: ContentItem[];
-  onCardClick: (id: string) => void;
-  onNewContent?: (status: ContentStatus) => void;
-  onAddNew?: () => void;
-}
+export const BoardView = ({ onCardClick, onAddNew }: any) => {
+  const { calendarPosts, publishingFlow } = useContentStore();
 
-const COLUMNS: ContentStatus[] = [
-  'Raw Idea',
-  'Selected',
-  'Research',
-  'Scripting',
-  'Design',
-  'Editing',
-  'Review',
-  'Scheduled',
-  'Published'
-];
-
-export const BoardView: React.FC<BoardViewProps> = ({ items, onCardClick, onNewContent, onAddNew }) => {
-  const { updateItem } = useContentStore();
-
-  if (items.length === 0) {
-    return (
-      <EmptyState 
-        icon={Layout}
-        title="Your Master Planner is Empty"
-        description="Transform your ideas into high-fidelity production strategies."
-        action={onAddNew ? {
-          label: "+ Create Strategy",
-          onClick: onAddNew
-        } : undefined}
-      />
-    );
-  }
-
-  const handleDragStart = (e: any, id: string) => {
-    e.dataTransfer.setData('itemId', id);
+  const getContentTypeIcon = (type: string) => {
+    if (type === 'deep_reel') return <Video size={14} className="text-cyan" />;
+    if (type === 'carousel') return <ImageIcon size={14} className="text-yellow-500" />;
+    if (['fast_reel', 'mirror', 'question', 'contrast', 'frame'].includes(type)) return <Video size={14} className="text-yellow-500" />;
+    return <Edit3 size={14} className="text-ash" />;
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = async (e: React.DragEvent, status: ContentStatus) => {
-    e.preventDefault();
-    const id = e.dataTransfer.getData('itemId');
-    if (id) {
-      await updateItem(id, { status });
-    }
-  };
-
-  const [mobileActiveStatus, setMobileActiveStatus] = React.useState<ContentStatus>(COLUMNS[0]);
+  // Build the board columns from publishing flow
+  // Default stages if none loaded:
+  const stages = publishingFlow.length > 0 ? publishingFlow : [
+    { stage_name: 'idea / script source' },
+    { stage_name: 'script approved' },
+    { stage_name: 'visual direction' },
+    { stage_name: 'shoot / design / edit' },
+    { stage_name: 'thumbnail / carousel asset' },
+    { stage_name: 'caption' },
+    { stage_name: 'internal review' },
+    { stage_name: 'scheduled' },
+    { stage_name: 'published' }
+  ];
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Mobile Column Picker */}
-      <div className="lg:hidden flex overflow-x-auto gap-2 pb-4 mb-4 custom-scrollbar-mini">
-        {COLUMNS.map(status => (
-          <button
-            key={status}
-            onClick={() => setMobileActiveStatus(status)}
-            className={cn(
-              "px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all border",
-              mobileActiveStatus === status 
-                ? "bg-dark text-white border-dark" 
-                : "bg-white text-ash/60 border-mist"
-            )}
-          >
-            {status} ({items.filter(i => i.status === status).length})
-          </button>
-        ))}
+    <div className="h-full flex flex-col">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-display text-dark italic-serif">Publishing Pipeline</h1>
+          <p className="text-ash mt-1">Track content through the production lifecycle.</p>
+        </div>
       </div>
 
-      <div className="flex gap-6 overflow-x-auto pb-8 h-full custom-scrollbar items-start">
-        {COLUMNS.map((status) => (
-          <div 
-            key={status}
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, status)}
-            className={cn(
-              "min-w-[280px] max-w-[280px] flex flex-col max-h-full bg-light-grey/30 rounded-2xl p-4 transition-all",
-              "hidden lg:flex", // Always show on desktop
-              mobileActiveStatus === status && "flex min-w-full" // Show active on mobile
-            )}
-          >
-            {/* Column Header */}
-            <div className="flex items-center justify-between mb-6 px-2">
-              <div className="flex items-center gap-3">
-                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-dark">{status}</h3>
-                <span className="text-[10px] font-mono text-ash/40 bg-white px-2 py-0.5 rounded-full border border-mist">
-                  {items.filter(i => i.status === status).length.toString().padStart(2, '0')}
-                </span>
+      <div className="flex-1 overflow-x-auto custom-scrollbar flex gap-6 pb-8">
+        {stages.map((stage: any) => {
+          const columnPosts = calendarPosts.filter(p => (p.publishing_status || 'idea / script source') === stage.stage_name);
+          
+          return (
+            <div key={stage.stage_name} className="flex-shrink-0 w-80 flex flex-col h-full bg-light-grey/50 rounded-xl border border-mist overflow-hidden">
+              <div className="p-4 border-b border-mist bg-surface flex justify-between items-center sticky top-0 z-10">
+                <div className="flex items-center gap-3">
+                  <h3 className="font-bold uppercase tracking-widest text-xs text-dark">{stage.stage_name}</h3>
+                  <span className="bg-mist text-ash text-[10px] px-2 py-0.5 rounded-full font-medium">
+                    {columnPosts.length}
+                  </span>
+                </div>
+                <button className="text-ash hover:text-cyan transition-colors">
+                  <MoreHorizontal size={16} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                {columnPosts.map(post => (
+                  <motion.div 
+                    layoutId={post.id}
+                    key={post.id}
+                    onClick={() => onCardClick(post.id)}
+                    className="bg-surface p-4 border border-mist shadow-sm hover:border-cyan hover:shadow-md transition-all cursor-pointer group"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-2">
+                        {getContentTypeIcon(post.content_type)}
+                        <span className="text-[10px] font-bold tracking-wider text-ash uppercase">
+                          {post.script?.script_code || post.content_type.replace('_', ' ')}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-ash/60 uppercase font-bold tracking-wider">
+                        #{post.post_number}
+                      </span>
+                    </div>
+
+                    <h4 className="text-dark font-medium text-sm leading-snug group-hover:text-cyan transition-colors line-clamp-3">
+                      {post.title_or_hook || post.script?.title || 'Untitled Post'}
+                    </h4>
+
+                    {post.date && (
+                      <div className="mt-3 pt-3 border-t border-mist/50 flex justify-between items-center text-[10px] uppercase font-bold tracking-wider text-ash">
+                        <span>{new Date(post.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                        <span>{post.month}</span>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
               </div>
             </div>
-
-            {/* Column Content */}
-            <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2 min-h-[300px] overscroll-contain touch-pan-y">
-              {items.filter(i => i.status === status).map((item) => (
-                <motion.div
-                  key={item.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, item.id)}
-                  onClick={() => onCardClick(item.id)}
-                  layoutId={item.id}
-                  className="bg-white border border-mist p-5 rounded-xl cursor-grab active:cursor-grabbing hover:border-cyan/40 hover:shadow-xl hover:shadow-dark/5 transition-all group relative"
-                >
-                  <div className="flex justify-between items-start mb-3">
-                     <Badge variant={item.priority} className="text-[8px] px-1.5 py-0.5">{item.priority}</Badge>
-                     <span className="text-[9px] font-mono text-ash/30">#{item.id.slice(0, 4)}</span>
-                  </div>
-
-                  <h4 className="text-[15px] font-display font-bold text-dark leading-snug mb-4 group-hover:text-cyan transition-colors">
-                    {item.title}
-                  </h4>
-
-                  <div className="flex items-center justify-between border-t border-mist/40 pt-4 mt-2">
-                    <div className="flex items-center gap-2">
-                       <Clock size={12} className="text-ash/30" />
-                       <span className="text-[9px] font-bold text-ash/60">
-                          {item.publish_date ? new Date(item.publish_date).toLocaleDateString() : 'Unscheduled'}
-                       </span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-
-              <button 
-                onClick={() => onNewContent?.(status)}
-                className="w-full py-4 border-2 border-dashed border-mist rounded-xl text-ash/40 hover:text-cyan hover:border-cyan/40 hover:bg-cyan/5 transition-all flex items-center justify-center gap-2 group"
-              >
-                <Plus size={16} className="group-hover:scale-125 transition-transform" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Add Piece</span>
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

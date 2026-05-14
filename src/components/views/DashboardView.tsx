@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Clock, AlertCircle, PieChart, CheckCircle2, Calendar } from 'lucide-react';

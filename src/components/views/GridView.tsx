@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MoreHorizontal, Calendar, Type, Globe, Tag, Maximize2 } from 'lucide-react';

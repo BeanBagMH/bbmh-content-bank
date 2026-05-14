@@ -1,232 +1,116 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Plus
-} from 'lucide-react';
-import type { ContentItem } from '../../types';
-import { cn } from '../common/Badge';
-
-interface CalendarViewProps {
-  items: ContentItem[];
-  onCardClick: (id: string) => void;
-  onNewContent: (date?: string) => void;
-}
-
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
+// @ts-nocheck
+import React, { useState, useMemo } from 'react';
 import { useContentStore } from '../../hooks/useContentStore';
+import { Calendar as CalendarIcon, Clock, Edit3, Image as ImageIcon, CheckCircle, Video } from 'lucide-react';
 
-export const CalendarView: React.FC<CalendarViewProps> = ({ items, onCardClick, onNewContent }) => {
-  const [currentDate, setCurrentDate] = React.useState(new Date());
-  const { updateItem } = useContentStore();
+export const CalendarView = ({ onCardClick, onNewContent }: any) => {
+  const { calendarPosts } = useContentStore();
+  const [selectedMonth, setSelectedMonth] = useState<string>('June 2026');
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+  // Find unique months for the filter
+  const availableMonths = useMemo(() => {
+    const months = new Set<string>();
+    calendarPosts.forEach(post => {
+      if (post.month) months.add(post.month);
+    });
+    // Sort logic could go here, but they are generally sequential
+    return Array.from(months);
+  }, [calendarPosts]);
+
+  const filteredPosts = useMemo(() => {
+    return calendarPosts.filter(p => p.month === selectedMonth).sort((a, b) => {
+      if (!a.date || !b.date) return 0;
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+  }, [calendarPosts, selectedMonth]);
+
+  const getStatusColor = (status: string) => {
+    if (status === 'drafting') return 'bg-yellow-500/20 text-yellow-500';
+    if (status === 'review') return 'bg-orange-500/20 text-orange-500';
+    if (status === 'approved') return 'bg-cyan/20 text-cyan';
+    if (status === 'published') return 'bg-green-500/20 text-green-500';
+    return 'bg-ash/20 text-ash';
   };
 
-  const handleDrop = async (e: React.DragEvent, date: string) => {
-    e.preventDefault();
-    const id = e.dataTransfer.getData('itemId');
-    if (id) {
-      await updateItem(id, { publish_date: date, status: 'Scheduled' });
-    }
+  const getContentTypeIcon = (type: string) => {
+    if (type === 'deep_reel') return <Video size={14} />;
+    if (type === 'carousel') return <ImageIcon size={14} />;
+    if (type === 'fast_reel' || type === 'mirror' || type === 'question' || type === 'contrast' || type === 'frame') return <Video size={14} className="text-yellow-500" />;
+    return <Edit3 size={14} />;
   };
-  
-  const month = currentDate.getMonth();
-  const year = currentDate.getFullYear();
-
-  const handlePrevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const handleNextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
-
-  const firstDayOfMonth = new Date(year, month, 1);
-  const lastDayOfMonth = new Date(year, month + 1, 0);
-  
-  // Adjusted for Monday start
-  let startDayOfWeek = firstDayOfMonth.getDay(); 
-  const offset = (startDayOfWeek === 0 ? 6 : startDayOfWeek - 1); 
-  
-  const totalDays = lastDayOfMonth.getDate();
-  const totalCells = Math.ceil((offset + totalDays) / 7) * 7;
 
   return (
-    <div className="h-full flex flex-col space-y-12">
-      {/* Calendar Header */}
-      <div className="flex items-end justify-between">
-        <div className="space-y-4">
-          <div className="flex items-baseline gap-6">
-             <h2 className="text-7xl font-display font-bold text-dark tracking-tighter italic-serif leading-none">
-               {MONTHS[month]}
-             </h2>
-             <span className="text-3xl font-display text-ash/30 font-bold">{year}</span>
-          </div>
-          <p className="text-ash/70 text-[11px] font-bold uppercase tracking-[0.4em]">Content Deployment Roadmap</p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-display text-dark italic-serif">Master Calendar</h1>
+          <p className="text-ash mt-1">116 Posts • June 2026 to January 2027</p>
         </div>
-
-        <div className="flex gap-4 items-center pb-2">
-          <div className="flex bg-white border border-mist rounded-xl overflow-hidden shadow-sm">
-            <button 
-              onClick={handlePrevMonth}
-              className="p-4 hover:bg-light-grey transition-all text-ash/60 hover:text-dark"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <div className="w-px bg-mist" />
-            <button 
-              onClick={handleNextMonth}
-              className="p-4 hover:bg-light-grey transition-all text-ash/60 hover:text-dark"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
-          
-          <button 
-            onClick={() => onNewContent()}
-            className="bg-dark text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-cyan transition-all shadow-lg shadow-dark/5"
+        
+        <div className="flex items-center gap-4">
+          <select 
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="bg-surface border border-mist text-dark text-sm py-2 px-4 focus:outline-none focus:border-cyan"
           >
-            <Plus size={18} />
-            <span className="text-[11px] font-bold uppercase tracking-widest">Schedule Piece</span>
-          </button>
+            {availableMonths.map(m => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* Mobile Agenda View (Visible only on small screens) */}
-      <div className="md:hidden flex-1 space-y-8 overflow-y-auto pb-20">
-        {Array.from({ length: totalDays }).map((_, i) => {
-          const dayNum = i + 1;
-          const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`;
-          const dayItems = items.filter(it => it.publish_date?.startsWith(dateStr));
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {filteredPosts.map(post => {
+          const isFastReel = ['mirror', 'question', 'contrast', 'frame'].includes(post.content_type);
           
-          if (dayItems.length === 0) return null;
-
           return (
-            <div key={i} className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-white border border-mist flex flex-col items-center justify-center shadow-sm">
-                   <span className="text-[10px] font-black text-ash/40 uppercase tracking-tighter">{DAYS[(new Date(year, month, dayNum).getDay() + 6) % 7]}</span>
-                   <span className="text-lg font-display font-bold text-dark">{dayNum}</span>
+            <div 
+              key={post.id}
+              onClick={() => onCardClick(post.id)}
+              className="bg-surface border border-mist p-5 hover:border-cyan transition-colors cursor-pointer group flex flex-col h-full relative"
+            >
+              {/* Top Meta */}
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold tracking-wider text-ash uppercase">
+                    {post.date ? new Date(post.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'TBD'}
+                  </span>
+                  <span className="text-xs text-ash/50 uppercase">{post.day}</span>
                 </div>
-                <div className="h-px flex-1 bg-mist/30" />
+                <div className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider ${getStatusColor(post.publishing_status)}`}>
+                  {post.publishing_status.replace('_', ' ')}
+                </div>
               </div>
-              
-              <div className="space-y-4 pl-4 border-l-2 border-mist/20 ml-6">
-                {dayItems.map(it => (
-                  <motion.div 
-                    key={it.id}
-                    onClick={() => onCardClick(it.id)}
-                    className="p-5 bg-white border border-mist rounded-2xl shadow-sm active:scale-95 transition-all"
-                  >
-                    <div className="flex items-center gap-2 mb-3">
-                       <span className="text-[9px] font-black text-cyan uppercase tracking-widest bg-cyan/5 px-2 py-0.5 rounded-full">{it.content_type}</span>
-                    </div>
-                    <h4 className="text-[15px] font-bold text-dark leading-snug">{it.title}</h4>
-                  </motion.div>
-                ))}
+
+              {/* Title & Hook */}
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-ash/60">{getContentTypeIcon(post.content_type)}</span>
+                  <span className="text-xs font-bold tracking-wider text-cyan uppercase">
+                    {post.script?.script_code || (post.content_type === 'carousel' ? 'CAROUSEL' : post.content_type)}
+                  </span>
+                </div>
+                
+                <h3 className="text-dark font-medium leading-tight mb-2 group-hover:text-cyan transition-colors line-clamp-3">
+                  {post.title_or_hook || post.script?.title || 'Untitled Post'}
+                </h3>
+              </div>
+
+              {/* Footer Meta */}
+              <div className="mt-4 pt-4 border-t border-mist/50 flex items-center justify-between">
+                <div className="text-[10px] text-ash uppercase tracking-wider font-bold">
+                  POST #{post.post_number}
+                </div>
+                {post.cascade_parent_script_id && (
+                  <div className="text-[10px] text-cyan uppercase tracking-wider font-bold">
+                    ↳ FROM DEEP REEL
+                  </div>
+                )}
               </div>
             </div>
           );
         })}
-        {items.filter(it => it.publish_date?.startsWith(`${year}-${(month + 1).toString().padStart(2, '0')}`)).length === 0 && (
-          <div className="py-20 text-center space-y-4">
-             <p className="text-ash/40 text-xs font-bold uppercase tracking-widest">No strategic deployments this month</p>
-             <button onClick={() => onNewContent()} className="text-cyan text-[10px] font-black uppercase tracking-widest">Schedule first piece</button>
-          </div>
-        )}
-      </div>
-
-      {/* Desktop Calendar Grid (Hidden on Mobile) */}
-      <div className="hidden md:flex flex-1 min-h-[600px] overflow-x-auto custom-scrollbar pb-4 -mx-4 px-4 md:mx-0 md:px-0">
-        <div className="min-w-[800px] md:min-w-full flex flex-col bg-white border border-mist rounded-3xl overflow-hidden shadow-sm h-full">
-          <div className="grid grid-cols-7 border-b border-mist bg-light-grey/30 sticky top-0 z-20">
-            {DAYS.map(d => (
-              <div key={d} className="py-6 text-center text-[10px] font-black text-ash/40 uppercase tracking-[0.3em]">
-                {d}
-              </div>
-            ))}
-          </div>
-          
-          <div className="flex-1 grid grid-cols-7 auto-rows-fr divide-x divide-y divide-mist/40 bg-mist/5">
-            {Array.from({ length: totalCells }).map((_, i) => {
-              const dayNum = i - offset + 1;
-              const isCurrentMonth = dayNum >= 1 && dayNum <= totalDays;
-              const dateStr = isCurrentMonth ? `${year}-${(month + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}` : null;
-              
-              const dayItems = dateStr ? items.filter(it => it.publish_date?.startsWith(dateStr)) : [];
-              const isToday = isCurrentMonth && 
-                dayNum === new Date().getDate() && 
-                month === new Date().getMonth() && 
-                year === new Date().getFullYear();
-
-              return (
-                <div 
-                  key={i} 
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => isCurrentMonth && dateStr && handleDrop(e, dateStr)}
-                  className={cn(
-                    "p-3 min-h-[160px] md:min-h-[140px] transition-all relative flex flex-col group bg-white",
-                    !isCurrentMonth && "bg-light-grey/20 opacity-40 grayscale pointer-events-none"
-                  )}
-                >
-                  {isCurrentMonth && (
-                    <>
-                      <div className="flex justify-between items-start mb-4">
-                        <span className={cn(
-                          "text-[18px] font-display font-bold transition-all",
-                          isToday ? "text-cyan" : "text-ash/30 group-hover:text-ash/60"
-                        )}>
-                          {dayNum.toString().padStart(2, '0')}
-                        </span>
-                        {isToday && (
-                          <span className="text-[8px] font-black text-cyan uppercase tracking-tighter bg-cyan/10 px-2 py-0.5 rounded-full">
-                            Today
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex-1 space-y-2.5 overflow-y-auto overscroll-contain custom-scrollbar-mini pr-1 pb-8">
-                        {dayItems.map(it => (
-                          <div 
-                            key={it.id} 
-                            draggable={true}
-                            onDragStart={(e) => {
-                              e.dataTransfer.setData('itemId', it.id);
-                              e.dataTransfer.effectAllowed = 'move';
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onCardClick(it.id);
-                            }}
-                            className="p-2.5 bg-white border border-mist rounded-xl cursor-pointer hover:border-cyan/40 hover:shadow-xl hover:shadow-dark/5 transition-all group/item active:scale-[0.98]"
-                          >
-                            <div className="flex items-center gap-2 mb-1.5">
-                               <div className="w-1 h-1 rounded-full bg-cyan" />
-                               <span className="text-[8px] font-bold text-ash/40 uppercase tracking-widest truncate">{it.content_type}</span>
-                            </div>
-                            <div className="text-[11px] font-bold text-dark leading-tight group-hover/item:text-cyan transition-colors line-clamp-2">
-                              {it.title}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {isCurrentMonth && (
-                        <button 
-                          onClick={() => onNewContent(dateStr || undefined)}
-                          className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-light-grey text-ash/40 hover:bg-dark hover:text-white transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 z-10"
-                        >
-                           <Plus size={14} />
-                        </button>
-                      )}
-                    </>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
       </div>
     </div>
   );

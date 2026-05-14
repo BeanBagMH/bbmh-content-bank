@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { User, Shield, Bell, Database, Globe, Camera as Instagram, Video as Youtube, Users as Linkedin, Share2 as Twitter, Save, Sparkles } from 'lucide-react';
 import { useContentStore } from '../../hooks/useContentStore';

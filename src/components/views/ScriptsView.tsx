@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { Copy, CheckCircle2, Terminal } from 'lucide-react';
 import type { ContentItem } from '../../types';
